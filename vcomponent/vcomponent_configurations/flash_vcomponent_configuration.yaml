@@ -1,0 +1,9 @@
+flash:                 # Component object begins
+  interfaceVersion: current
+  SupportedFileProperties:      
+      FILETYPE             : ".img"
+      FILEPATH             : "/data/flash/"
+      FILESIGNATURE        : "TRUE"
+      FILESIZE             : "20MB"
+      
+ 
