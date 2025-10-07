@@ -98,6 +98,7 @@ By corrupting or placing wrong inputs in flash header, L2 Negative cases can be 
 | OS Type |1|uint8_t|OS identifier (e.g., Linux, VxWorks)|
 | Architecture |1|uint8_t| CPU architecture (e.g., ARM, x86)|
 | Image Type |1|uint8_t| Type of image (e.g., kernel, RAM disk)|
+| Compression Type |1|uint8_t| Compression type (e.g., gzip, none)|
 | Image Name |32|uint8_t| Null-terminated ASCII string describing the image|
 
 
