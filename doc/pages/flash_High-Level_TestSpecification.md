@@ -65,7 +65,7 @@ The output of an flashing an image onto the device can take two results:
 Test evaluates flashing an image file with the initially by copying the image in respective device via UART, IP or USB.
 Respective Device should be connected to power and communication channel should be established.
 
-## L2 Test Specification
+## L3 Test Specification
 
 | Test | Description | HAL APIs |
 |------|-------------|----------|
@@ -79,51 +79,18 @@ Respective Device should be connected to power and communication channel should 
 | Flash file size | Test will check for correct size of the image file and post `ERROR_IMAGE_INVALID_SIZE = 4` by `onCompleted()` if Image size does not fit into the target flash area.  |  `flashImageFromFile()`, `onCompleted()` |
 | Compatible Flash image | Test will check for compatible image file with targeted device and post `ERROR_IMAGE_INVALID_PRODUCT = 5` by `onCompleted()` if Image size is not compatible product.  |  `flashImageFromFile()`, `onCompleted()` |
 
+### Flash images 
 
-### Flash Image Header format
-
-The flash image header format typically refers to the metadata structure at the beginning of image used for flashing devices.
-By corrupting or placing wrong inputs in flash header, L2 Negative cases can be achieved for flash component.   
-
-
-|Field Name|Size (Bytes)|Field Type|Description|
-|--------|----|---------|--------------------------|
-| Magic Number |4|uint32_t|Magic number Identifies the image type (e.g., 0x27051956 for U-Boot)|
-| Header CRC |4|uint32_t|CRC32 checksum of the header(excluding this field)|
-| Timestamp |4|uint32_t|Build time (UNIX timestamp)|
-| Image Size |4|uint32_t|Total size of the image (excluding header)|
-| Load Address |4|uint32_t|Address where the image should be loaded in memory|
-| Entry Point |4|uint32_t|Address where execution starts|
-| Data CRC |4|uint32_t|CRC32 checksum of the image data|
-| OS Type |1|uint8_t|OS identifier (e.g., Linux, VxWorks)|
-| Architecture |1|uint8_t| CPU architecture (e.g., ARM, x86)|
-| Image Type |1|uint8_t| Type of image (e.g., kernel, RAM disk)|
-| Compression Type |1|uint8_t| Compression type (e.g., gzip, none)|
-| Image Name |32|uint8_t| Null-terminated ASCII string describing the image|
+Test images are local data files for the test suite and shall places under assets/flashfiles/input
+The following test flash images will be used for flashing process to get the different types of errors.
 
 
-## L3 Test Specification
-
-The following table outlines the core features validated in the L3 test phase
-
-| Test | Description | HAL APIs |
-|------|-------------|----------|
-| Flash Verify| Test will verifies for flashing operation then post `ERROR_FLASH_VERIFY_FAILED = 7` when flash read operation is failed. | `flashImageFromFile()`, `onCompleted()` |
-| Flash write| Test will verifies for file write opertion and post `ERROR_FLASH_WRITE_FAILED = 6` if the write operation is failed | `flashImageFromFile()`, `onCompleted()` |
-| Post Siganture verification| Test will check  if Flash image signature failed verification after writing and post `ERROR_FLASH_VERIFY_SIGNATURE_FAILED = 8` | `flashImageFromFile()`, `onCompleted()`|
-| Flashing in Background | Test ensures that background flashing operation shall run at a priority which does not impact foreground audio, video or graphics operations.  | `flashImageFromFile()`, `onProgress()`,`onCompleted()` |
-| Post flashing image verification | Test will verifies boot and basic services initializes correctly without any corruption. | `flashImageFromFile()`, `onCompleted()` |
-| Recovery to previous image | Test will checks if the flashed image has corrupted because of several reasons then revert back its previous image.  | `flashImageFromFile()`, `onCompleted()` |
-
-
-### Validation Method
-
-The following Validation Methods can be used for verifying successful flashing an image on to the device.
-
-|#|Method|Description|
-|-|------------------|----------------|
-|1|Boot Verification|The Device should boot and up services successfully after flashing|
-|2|New Version| /version.txt should be updated with new image version|
-|3|SSH|Device should establish successful SSH connectivity  |
-|4|Serial port connection| Device should establish the Serial port connection|
------------
+|#|Flash file name|image type|
+|-|----|------|
+|1|flash_valid_image1.hex|hex image type|
+|2|flash_valid_image2.DRI|DRI images|
+|3|flash_valid_image3.pc1|PC1 images|
+|4|flash_valid_image4.img|U-Boot wrapped image|
+|5|flash_invalid_image1.bin|Raw Binary Image|
+|6|flash_unsigned_image1.DRI|Unsigned DRI image|
+|7|flash_invalid_pmi1.DRI|invalid PMI image|
