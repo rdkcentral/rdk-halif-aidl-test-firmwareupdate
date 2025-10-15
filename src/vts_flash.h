@@ -126,12 +126,12 @@ using namespace com::rdk::hal::flash;
             listener.get(), UT_Control_GetMapString(bool_mapTable_flash, _aidl_return), \
             UT_Control_GetMapString(bool_mapTable_flash, status.isOk()), \
             UT_Control_GetMapString(statusFlashException_mapTable, status.exceptionCode())); \
-        if (exception == Status::EX_NONE) \
-            UT_ASSERT_TRUE(status.isOk()); \
+        if (exception == (Status::EX_ILLEGAL_ARGUMENT) || Status::EX_NULL_POINTER) \
+            UT_ASSERT_FALSE(status.isOk()); \
         else \
-            UT_ASSERT_FALSE(status.isOk()); \   
+            UT_ASSERT_TRUE(status.isOk()); \ 
         UT_ASSERT_EQUAL(status.exceptionCode(), exception); \
-          UT_ASSERT_FALSE(_aidl_return); \        
+        UT_ASSERT_FALSE(_aidl_return); \ 
     } while (0)
 
 

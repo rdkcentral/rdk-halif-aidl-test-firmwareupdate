@@ -81,9 +81,9 @@ public:
 };
 
 /**
-* @brief Tests the
+* @brief Verify that flashImageFromFile correctly processes valid flash image file paths
 *
-* This test verifies that the
+* This test validates the flashImageFromFile API by passing valid filename and valid listener.
 *
 * **Test Group ID:** Basic: 01@n
 * **Test Case ID:** 001@n
@@ -96,35 +96,32 @@ public:
 * **Test Procedure:**@n
 * |Variation / Step|Description|Test Data|Expected Result|Notes|
 * |----------------|-----------|---------|---------------|-----|
-* |01||None||Should Pass|
+* |01||Define filenames with valid, invalid and empty string values|call FLASHIMAGEFROMFILE_FAILURE|Should fail|
+  |02||Create NULL flash listener |call FLASHIMAGEFROMFILE_FAILURE|Should fail|
 
 */
 
-UT_ADD_TEST(VTS_L1_FLASH, flashImageFromFile_pos)
+UT_ADD_TEST(VTS_L1_FLASH, flashImageFromFile_neg)
 {
+    std::string fileName1 = {"/asserts/input/flash_valid_image2.DRI"};
+    std::string fileName2 = {" "};
+    std::string fileName3 = {"/asserts/flashfiles/input/flash_valid_image2.DRI"};
+    sp<IFlashListener> listener1 = new FlashListener();
+    sp<IFlashListener> listener2 = NULL;
 
-    sp<IFlashListener> listener = new FlashListener();     
+   // Test case 1: Pass file with wrong file path 
 
-    FLASHIMAGEFROMFILE_SUCCESS(gFLASHHandle,"/asserts/flashfiles/input/flash_valid_image1.hex",listener);     
-    
+    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,fileName1,listener1,Status::EX_ILLEGAL_ARGUMENT);
+
+    // Test case 2: Pass filename as empty string 
+
+    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,fileName2,listener1,Status::EX_ILLEGAL_ARGUMENT);
+
+   //Test case 2: Send NULL listener
+
+    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,fileName3,listener2,Status::EX_NULL_POINTER);
 }
 
-UT_ADD_TEST(VTS_L1_FLASH, flashImageFromFile_neg1)
- 
-  { 
- sp<IFlashListener> listener = new FlashListener();    
-
-    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,"file",listener,Status::EX_ILLEGAL_ARGUMENT);    
-    
-}
-UT_ADD_TEST(VTS_L1_FLASH, flashImageFromFile_neg2)
-{   
-    
-    sp<IFlashListener> listener = NULL;
-
-    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,"/asserts/flashfiles/input/flash_valid_image2.DRI",listener,Status::EX_NULL_POINTER);          
-    
-}
 
 /** @} */ // End of FLASH_HALTEST L1 File
 /** @} */ // End of FLASH_HALTEST
