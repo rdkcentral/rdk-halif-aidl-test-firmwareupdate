@@ -58,7 +58,7 @@ export ENABLE_UT_INFO_LOGGING=1
 Run the build script:
 
 ```bash
-./build.sh TARGET=linux
+./build.sh Target=linux
 ```
 
 The build.sh script:
