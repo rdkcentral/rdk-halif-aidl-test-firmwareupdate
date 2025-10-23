@@ -54,3 +54,8 @@ $(AIDL_LIB): $(AIDL_SRC:%.cpp=%.o)
 
 %.o: %.cpp
 	g++ $(AIDL_LIB_CFLAGS) $(AIDL_LIB_INC_FLAGS) -fPIC -c $< -o $@
+
+# Clean target
+clean:
+	@echo "Cleaning object files and library..."
+	rm -f $(AIDL_OBJ) $(AIDL_LIB_PATH)

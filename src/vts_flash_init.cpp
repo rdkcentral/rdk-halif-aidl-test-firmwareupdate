@@ -107,11 +107,6 @@ UT_status_t VTS_FLASH_init()
         UT_LOG_ERROR("Failed to get FLASH Service");
         return UT_STATUS_FAILURE;
     }
-    //if(vts_flash_parse_hfp() != UT_STATUS_OK)
-    //{
-     //   UT_LOG_ERROR("Failed to process the FLASh HFP file");
-    //}
-
     return UT_STATUS_OK;
 }
 

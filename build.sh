@@ -31,6 +31,8 @@ declare -r TOP=`dirname $(realpath $0)`
 declare -r HALIF_VERSION=current
 RDK_HALIF_AIDL_VERSION="${RDK_HALIF_AIDL_VERSION="main"}"
 RDK_HALIF_TEST_BASE_URL="https://github.com/rdkcentral/rdk-halif-binder-test-"
+VCOMPONENT_FLASH_VERSION="${VCOMPONENT_DEEPSLEEP_VERSION="main"}"
+OUT_TAR_FILE=vts-flash.tar.gz
 
 declare -A HALIF_COMPONENTS=(
   [flash]="current"
@@ -42,6 +44,7 @@ declare -A HALIF_TEST_COMPONENTS=(
 
 # Define the directory where the repository will be cloned
 declare -r UT_CORE_DIR="${TOP}/ut-core"
+declare -r VCOMPONENT_DIR="${TOP}/vcomponent"
 declare -r TOP_BUILD_DIR="${TOP}/build"
 declare -r COMMON_DIR="${TOP}/common"
 declare -r BUILD_INSTALL_PREFIX=${TOP_BUILD_DIR}/usr
@@ -181,6 +184,19 @@ build_ut_core()
 ###############################################################################
 build_vcomponent_services()
 {
+    if [ ! -d ${VCOMPONENT_DIR} ]; then
+        git clone git@rdkcentral-github.com:rdkcentral/rdk-aidl-vcomponent-flash.git ${VCOMPONENT_DIR}
+        if [ $? -ne 0 ]; then
+            echo "Failed to clone the repository. Exiting."
+            exit 1
+        fi
+    fi
+
+    pushd ${VCOMPONENT_DIR}
+
+    #git checkout ${VCOMPONENT_FLASH_VERSION}
+    git checkout feature/gh3_Vcomponent_changes #Remove this line, once vcomponent PR is merged
+
     make -j"$(nproc)" -C "${TOP}/vcomponent" BUILD_DIR="${TOP_BUILD_DIR}" UT_CORE_DIR="${UT_CORE_DIR}"
     if [ $? -ne 0 ]; then
         echo -e "${BOLD}╔════════════════════════════════════════════════╗${RESET}"
@@ -188,6 +204,8 @@ build_vcomponent_services()
         echo -e "${BOLD}╚════════════════════════════════════════════════╝${RESET}"
         exit 1
     fi
+
+    popd
 }
 
 ###############################################################################
@@ -218,6 +236,9 @@ install_test()
 
     cp -r ${PROFILES_DIR} ${INSTALL_PATH}
     cp -r "${TOP}/vcomponent/vcomponent_configurations" ${INSTALL_PATH}
+    cd ${INSTALL_PATH}
+    tar -czf ${OUT_TAR_FILE} *
+    cd -
 }
 
 ###############################################################################
@@ -230,6 +251,10 @@ clean_test()
     rm -rf test/*.o
     rm -rf ${TOP}/vcomponent/src/*.o
     rm -rf ${TOP}/src/*.o
+    make -C ${AIDL_LIB_DIR} clean
+    make -C ${VCOMPONENT_DIR} clean
+    make clean
+    rm -rf ${TOP_BUILD_DIR}/bin/${OUT_TAR_FILE}
 }
 
 ###############################################################################
@@ -241,6 +266,7 @@ dist_clean_test()
     rm -rf $TOP_BUILD_DIR
     rm -rf $RDK_HAL_DIR
     rm -rf ${UT_CORE_DIR}
+    rm -rf ${VCOMPONENT_DIR}
 }
 
 ###############################################################################
@@ -274,7 +300,7 @@ elif [ "$1" == "dist_clean" ]; then
     dist_clean_test
 elif [ "$1" == "help" ]; then
     help
-elif [[ "$1" == TARGET=* ]]; then
+elif [[ "$1" == [Tt]arget=* ]]; then
     install_linux_binder
     generate_hal_interfaces
     build_aidl_libs

@@ -145,7 +145,7 @@ public:
      ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
 };
 
-#endif // __VTS_DEEPSLEEP_H__
+#endif // __VTS_FLASH_H__
 
 /** @} */ // End of FLASH_HALTEST_HEADER
 /** @} */ // End of FLASH_HALTEST
