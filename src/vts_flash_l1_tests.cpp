@@ -119,7 +119,7 @@ UT_ADD_TEST(VTS_L1_FLASH, flashImageFromFile_neg)
 
    //Test case 2: Send NULL listener
 
-    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,fileName3,listener2,Status::EX_NONE);
+    FLASHIMAGEFROMFILE_FAILURE(gFLASHHandle,fileName3,listener2,Status::EX_NULL_POINTER);
 }
 
 

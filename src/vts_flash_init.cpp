@@ -91,7 +91,7 @@ static UT_status_t vts_flash_getService()
 {
    gFLASHHandle = android::interface_cast<IFlash>(
             defaultServiceManager()->getService(String16(IFlash::serviceName().c_str())));
-    gFLASHHandle ;
+
     if (gFLASHHandle == nullptr)
     {
         UT_LOG_ERROR("FLASH Service not available");
