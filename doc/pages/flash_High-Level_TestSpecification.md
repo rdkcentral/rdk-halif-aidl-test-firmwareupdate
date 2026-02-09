@@ -34,30 +34,58 @@
 
 ## Introduction
 
-This document provides an overview of the testing requirements for the flash module. It outlines the scope of testing, objectives, testing levels and approaches, specific test requirements.
+This document describes the *High Level Design (HLD)* for the Flash Hardware Abstraction Layer (HAL).
+The Flash HAL provides a standardized interface for flashing firmware image files onto an RDK device in a non-blocking, asynchronous manner
 
+The design defines the functional scope, architecture, operational flow, constraints, and error-handling behavior of the Flash HAL. Detailed test procedures are covered separately in the L2 and L3 test specifications..
+
+## Reference
 - Flash Interface Definitions - [Flash HAL]()
 
 - Flash Overview - [Flash Overview]()
 
 ## Module Description
 
-The Flash `HAL` service provides the interfaces for Flashing a firmware image file onto the device.
+The Flash HAL exposes a single service (IFlash) that allows clients to initiate a background firmware flashing operation using an image file stored on the device.
+The HAL supports flashing of different image types, including but not limited to:
 
-The output of an flashing an image onto the device can take two results:
+- Application images
+- Bootloader images
+- Disaster recovery images
+- Splash screen images
 
-1. **Success** - Correct image has been flashed on to the device.
-2. **Failure** - flashing failed due to either incorrect size, signature failure, invalid file, incompatible product, Null listener etc.
+The supported image types and flashing mechanisms are platform-dependent and determined by inspection of the image file
 
-## Flashing image Specification
+## Flash Operation Outcomes
+A flash operation results in one of the following outcomes, reported asynchronously via callbacks:
 
-|#|Image file |Specification|
+1. **Success**
+	- The image has been successfully validated, written, and verified.
+	- The image is marked as the preferred image for the next boot.
+2. **Failure**
+	- Flashing fails due to validation errors, hardware errors, or internal failures.
+	- A standardized error code and optional diagnostic report are returned.
+
+## Interaction Model
+
+ - The client invokes flashImageFromFile() to start a flash operation.
+ - The Flash HAL performs validation and flashing in the background.
+ - Progress and completion are reported through IFlashListener callbacks.
+
+## Flash Image Validation Specification
+
+Before flashing begins, the HAL validates the image file against the following criteria:
+
+|#|Validation |Description|
 |-|------------------|----------------|
-|1|*File existence*|The flashing image file path should be predefined.|
+|1|*File existence*|The flashing image path should be exist.|
 |2|*File Type*|The image file should be a valid flash file type.|
 |3|*Valid file Signature*|The image file should have valid signature.|
 |4|*correct size*| The image should have correct size for the target flash area.|
 |5|*compatible product*|The image file should be compatible with target device.|
+
+If any validation step fails, flashing is aborted and the corresponding error is reported via onCompleted()
+
 -----------
 
 ## Prerequisites
@@ -69,15 +97,15 @@ Respective Device should be connected to power and communication channel should 
 
 | Test | Description | HAL APIs |
 |------|-------------|----------|
-| Image flashing | Test will Trigger the flashing with correct image where image file meets all the specification and successful completion of flashing. On completion post `SUCCESS = 0,`  Flash image result. | `flashImageFromFile()`, `onProgress()` and `onCompleted()` |
-| Progress of flashing | Test will awaits for the callback which gives the progress of flashing the image and percentage of completion.| `onProgress()` |
-| Completion of flashing | Test will awaits for the callback  when the  image flashing operation has completed.| `onCompleted()`  |
-| Flash listener | Test will check for valid listener passed o the `flashImageFromFile()`to get the progress and completion status.|`IFlashListener `|
-| Image File path | Test for correct image file path passed to the `flashImageFromFile()` and post  `ERROR_FILE_OPEN_FAIL = 1` by `onCompleted()` if the path is wrong or file does not exist. | `flashImageFromFile()`, `onCompleted()`|
-| File Type | Test will checks for correct file type to be flashed and post `ERROR_IMAGE_INVALID_TYPE  = 2` by `onCompleted()` if the file type is not correct. |  `flashImageFromFile()`, `onCompleted()` |
-| Signature verify | Test will check for Signature of image file and post `ERROR_IMAGE_INVALID_SIGNATURE = 3` by `onCompleted()` if the image signature failed in verification. |  `flashImageFromFile()`, `onCompleted()` |
-| Flash file size | Test will check for correct size of the image file and post `ERROR_IMAGE_INVALID_SIZE = 4` by `onCompleted()` if Image size does not fit into the target flash area.  |  `flashImageFromFile()`, `onCompleted()` |
-| Compatible Flash image | Test will check for compatible image file with targeted device and post `ERROR_IMAGE_INVALID_PRODUCT = 5` by `onCompleted()` if Image size is not compatible product.  |  `flashImageFromFile()`, `onCompleted()` |
+| Verify a flashing of valid Image | Test will Trigger the flashing with correct image where image file meets all the specification and successful completion of flashing. On completion post `SUCCESS = 0,`  Flash image result. | `flashImageFromFile()`, `onProgress()` and `onCompleted()` |
+| Verify a flash progress | Test will awaits for the callback which gives the progress of flashing the image and percentage of completion.| `onProgress()` |
+| Verify a flash completion | Test will awaits for the callback  when the  image flashing operation has completed.| `onCompleted()`  |
+| Verify Flash listener | Test will check for valid listener passed o the `flashImageFromFile()`to get the progress and completion status.|`IFlashListener `|
+| Verify Image File path | Test for correct image file path passed to the `flashImageFromFile()` and post  `ERROR_FILE_OPEN_FAIL = 1` by `onCompleted()` if the path is wrong or file does not exist. | `flashImageFromFile()`, `onCompleted()`|
+| Verify Flash File Type | Test will checks for correct file type to be flashed and post `ERROR_IMAGE_INVALID_TYPE  = 2` by `onCompleted()` if the file type is not correct. |  `flashImageFromFile()`, `onCompleted()` |
+| Verify Signature of Flash file | Test will check for Signature of image file and post `ERROR_IMAGE_INVALID_SIGNATURE = 3` by `onCompleted()` if the image signature failed in verification. |  `flashImageFromFile()`, `onCompleted()` |
+| Verify Flash file size | Test will check for correct size of the image file and post `ERROR_IMAGE_INVALID_SIZE = 4` by `onCompleted()` if Image size does not fit into the target flash area.  |  `flashImageFromFile()`, `onCompleted()` |
+| Verify Compatible Flash image | Test will check for compatible image file with targeted device and post `ERROR_IMAGE_INVALID_PRODUCT = 5` by `onCompleted()` if Image size is not compatible product.  |  `flashImageFromFile()`, `onCompleted()` |
 
 ### Flash images 
 
