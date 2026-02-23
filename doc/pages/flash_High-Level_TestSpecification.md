@@ -7,7 +7,6 @@
 - [Module Description](#module-description)
 - [Flashing image Specification](#flashing-image-specification)
 - [Prerequisites](#prerequisites)
-- [L2 Test Specification](#l2-test-specification)
 - [L3 Test Specification](#l3-test-specification)
 
 ## Acronyms, Terms and Abbreviations
@@ -95,17 +94,23 @@ Respective Device should be connected to power and communication channel should 
 
 ## L3 Test Specification
 
-| Test | Description | HAL APIs |
-|------|-------------|----------|
-| Verify a flashing of valid Image | Test will Trigger the flashing with correct image where image file meets all the specification and successful completion of flashing. On completion post `SUCCESS = 0,`  Flash image result. | `flashImageFromFile()`, `onProgress()` and `onCompleted()` |
-| Verify a flash progress | Test will awaits for the callback which gives the progress of flashing the image and percentage of completion.| `onProgress()` |
-| Verify a flash completion | Test will awaits for the callback  when the  image flashing operation has completed.| `onCompleted()`  |
-| Verify Flash listener | Test will check for valid listener passed o the `flashImageFromFile()`to get the progress and completion status.|`IFlashListener `|
-| Verify Image File path | Test for correct image file path passed to the `flashImageFromFile()` and post  `ERROR_FILE_OPEN_FAIL = 1` by `onCompleted()` if the path is wrong or file does not exist. | `flashImageFromFile()`, `onCompleted()`|
-| Verify Flash File Type | Test will checks for correct file type to be flashed and post `ERROR_IMAGE_INVALID_TYPE  = 2` by `onCompleted()` if the file type is not correct. |  `flashImageFromFile()`, `onCompleted()` |
-| Verify Signature of Flash file | Test will check for Signature of image file and post `ERROR_IMAGE_INVALID_SIGNATURE = 3` by `onCompleted()` if the image signature failed in verification. |  `flashImageFromFile()`, `onCompleted()` |
-| Verify Flash file size | Test will check for correct size of the image file and post `ERROR_IMAGE_INVALID_SIZE = 4` by `onCompleted()` if Image size does not fit into the target flash area.  |  `flashImageFromFile()`, `onCompleted()` |
-| Verify Compatible Flash image | Test will check for compatible image file with targeted device and post `ERROR_IMAGE_INVALID_PRODUCT = 5` by `onCompleted()` if Image size is not compatible product.  |  `flashImageFromFile()`, `onCompleted()` |
+| Test | Description | HAL APIs | Expected FlashImageResult / Report |
+|------|-------------|----------|----------------------------------|
+| Successful Flash Completion | Trigger flashing with a correct image that meets all specifications. Verify `onProgress()` 0→100% and `onCompleted()` is called once. | `flashImageFromFile()`, `onProgress()`, `onCompleted()` | `SUCCESS = 0` <br>Report: `"Image was flashed successfully"` |
+| Flash of Different Image Types | Flash application, bootloader, disaster recovery, splash screen images end-to-end and verify each type is applied successfully. | `IFlashListener` | `SUCCESS = 0` |
+| Verify Flash listener | Ensure a valid listener passed to `flashImageFromFile()` receives progress and completion callbacks. | `IFlashListener` | Progress 0→100%, `onCompleted()` called once |
+| End-to-End Progress and Completion Verification | Trigger a flash operation and verify `onProgress()` reports 0→100% and `onCompleted()` is called exactly once. | `onProgress()`, `onCompleted()` | Any result code; report as returned |
+| Concurrent Flash Requests | Attempt multiple flash operations concurrently. Verify only the first request is accepted; subsequent requests are rejected. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Flash operation already in progress"` |
+| Invalid Listener | Pass `nullptr` or invalid listener; verify operation rejects and proper error returned. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Invalid listener"` |
+| Verify Image File path | Flash with an invalid or missing image file. Verify `onCompleted()` returns `ERROR_FILE_OPEN_FAIL = 1`. | `flashImageFromFile()`, `onCompleted()` | `"Failed to open input file"` |
+| Verify Flash File Type | Flash with unsupported image type. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_TYPE = 2`. | `flashImageFromFile()`, `onCompleted()` | `"The image cannot be recognised as a flashable image"` |
+| Verify Signature of Flash file | Flash with an image that has an invalid signature. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_SIGNATURE = 3`. | `flashImageFromFile()`, `onCompleted()` | `"The image signature failed verification"` |
+| Verify Flash file size | Flash with an image whose size does not fit the target flash area. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_SIZE = 4`. | `flashImageFromFile()`, `onCompleted()` | `"Image size does not fit into the target flash area"` |
+| Verify Compatible Flash image | Flash with an image incompatible with the target device. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_PRODUCT = 5`. | `flashImageFromFile()`, `onCompleted()` | `"Image is incompatible with this product"` |
+| Simulate Flash Write Failure | Simulate or inject a flash write failure during operation. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_WRITE_FAILED = 6` <br>Report: `"Flash write operation failed"` |
+| Simulate Flash Verify Failure | Simulate failed flash read verification after writing. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_VERIFY_FAILED = 7` <br>Report: `"Flash read verify operation failed"` |
+| Simulate Flash Signature Verify Failure | Simulate post-write signature verification failure. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_VERIFY_SIGNATURE_FAILED = 8` <br>Report: `"Flash image signature failed verification after writing"` |
+| Simulate Unknown / General Error | Inject or trigger unexpected internal failure. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Internal failure or unexpected error"` |
 
 ### Flash images 
 
