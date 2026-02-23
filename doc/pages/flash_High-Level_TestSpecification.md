@@ -46,7 +46,7 @@ The design defines the functional scope, architecture, operational flow, constra
 ## Module Description
 
 The Flash HAL exposes a single service (IFlash) that allows clients to initiate a background firmware flashing operation using an image file stored on the device.
-The HAL supports flashing of different image types, including but not limited to:
+The HAL shall support flashing the following firmware image types::
 
 - Application images
 - Bootloader images
@@ -96,7 +96,7 @@ Respective Device should be connected to power and communication channel should 
 
 | Test | Description | HAL APIs | Expected FlashImageResult / Report |
 |------|-------------|----------|----------------------------------|
-| Successful Flash Completion | Trigger flashing with a correct image that meets all specifications. Verify `onProgress()` 0→100% and `onCompleted()` is called once. | `flashImageFromFile()`, `onProgress()`, `onCompleted()` | `SUCCESS = 0` <br>Report: `"Image was flashed successfully"` |
+| Successful Flash Completion | Initiate a flash operation using a valid firmware image file. Verify that onProgress() reports incremental progress from 0 to 100% and that onCompleted() is called exactly once with a success result (SUCCESS = 0).. | `flashImageFromFile()`, `onProgress()`, `onCompleted()` | `SUCCESS = 0` <br>Report: `"Image was flashed successfully"` |
 | Flash of Different Image Types | Flash application, bootloader, disaster recovery, splash screen images end-to-end and verify each type is applied successfully. | `IFlashListener` | `SUCCESS = 0` |
 | Verify Flash listener | Ensure a valid listener passed to `flashImageFromFile()` receives progress and completion callbacks. | `IFlashListener` | Progress 0→100%, `onCompleted()` called once |
 | End-to-End Progress and Completion Verification | Trigger a flash operation and verify `onProgress()` reports 0→100% and `onCompleted()` is called exactly once. | `onProgress()`, `onCompleted()` | Any result code; report as returned |
