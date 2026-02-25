@@ -92,21 +92,18 @@ If any validation step fails, flashing is aborted and the corresponding error is
 Test evaluates flashing an image file with the initially by copying the image in respective device via UART, IP or USB.
 Respective Device should be connected to power and communication channel should be established.
 
+**Note:** 
+
+Since the Flash HAL exposes only a single function (`flashImageFromFile()`), L2 testing is not applicable.  
+
+L3 testing requires test setup capable of simulating device reboots and monitoring flash progress, as the operation is asynchronous and interacts directly with the hardware.
+
 ## L3 Test Specification
 
 | Test | Description | HAL APIs | Expected FlashImageResult / Report |
 |------|-------------|----------|----------------------------------|
 | Successful Flash Completion | Initiate a flash operation using a valid firmware image file. Verify that onProgress() reports incremental progress from 0 to 100% and that onCompleted() is called exactly once with a success result (SUCCESS = 0).. | `flashImageFromFile()`, `onProgress()`, `onCompleted()` | `SUCCESS = 0` <br>Report: `"Image was flashed successfully"` |
-| Flash of Different Image Types | Flash application, bootloader, disaster recovery, splash screen images end-to-end and verify each type is applied successfully. | `IFlashListener` | `SUCCESS = 0` |
-| Verify Flash listener | Ensure a valid listener passed to `flashImageFromFile()` receives progress and completion callbacks. | `IFlashListener` | Progress 0→100%, `onCompleted()` called once |
-| End-to-End Progress and Completion Verification | Trigger a flash operation and verify `onProgress()` reports 0→100% and `onCompleted()` is called exactly once. | `onProgress()`, `onCompleted()` | Any result code; report as returned |
 | Concurrent Flash Requests | Attempt multiple flash operations concurrently. Verify only the first request is accepted; subsequent requests are rejected. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Flash operation already in progress"` |
-| Invalid Listener | Pass `nullptr` or invalid listener; verify operation rejects and proper error returned. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Invalid listener"` |
-| Verify Image File path | Flash with an invalid or missing image file. Verify `onCompleted()` returns `ERROR_FILE_OPEN_FAIL = 1`. | `flashImageFromFile()`, `onCompleted()` | `"Failed to open input file"` |
-| Verify Flash File Type | Flash with unsupported image type. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_TYPE = 2`. | `flashImageFromFile()`, `onCompleted()` | `"The image cannot be recognised as a flashable image"` |
-| Verify Signature of Flash file | Flash with an image that has an invalid signature. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_SIGNATURE = 3`. | `flashImageFromFile()`, `onCompleted()` | `"The image signature failed verification"` |
-| Verify Flash file size | Flash with an image whose size does not fit the target flash area. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_SIZE = 4`. | `flashImageFromFile()`, `onCompleted()` | `"Image size does not fit into the target flash area"` |
-| Verify Compatible Flash image | Flash with an image incompatible with the target device. Verify `onCompleted()` returns `ERROR_IMAGE_INVALID_PRODUCT = 5`. | `flashImageFromFile()`, `onCompleted()` | `"Image is incompatible with this product"` |
 | Simulate Flash Write Failure | Simulate or inject a flash write failure during operation. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_WRITE_FAILED = 6` <br>Report: `"Flash write operation failed"` |
 | Simulate Flash Verify Failure | Simulate failed flash read verification after writing. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_VERIFY_FAILED = 7` <br>Report: `"Flash read verify operation failed"` |
 | Simulate Flash Signature Verify Failure | Simulate post-write signature verification failure. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_VERIFY_SIGNATURE_FAILED = 8` <br>Report: `"Flash image signature failed verification after writing"` |
