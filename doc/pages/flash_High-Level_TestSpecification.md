@@ -100,14 +100,14 @@ L3 testing requires test setup capable of simulating device reboots and monitori
 
 ## L3 Test Specification
 
-| Test | Description | HAL APIs | Expected FlashImageResult / Report |
-|------|-------------|----------|----------------------------------|
-| Successful Flash Completion | Initiate a flash operation using a valid firmware image file. Verify that onProgress() reports incremental progress from 0 to 100% and that onCompleted() is called exactly once with a success result (SUCCESS = 0).. | `flashImageFromFile()`, `onProgress()`, `onCompleted()` | `SUCCESS = 0` <br>Report: `"Image was flashed successfully"` |
-| Concurrent Flash Requests | Attempt multiple flash operations concurrently. Verify only the first request is accepted; subsequent requests are rejected. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Flash operation already in progress"` |
-| Simulate Flash Write Failure | Simulate or inject a flash write failure during operation. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_WRITE_FAILED = 6` <br>Report: `"Flash write operation failed"` |
-| Simulate Flash Verify Failure | Simulate failed flash read verification after writing. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_VERIFY_FAILED = 7` <br>Report: `"Flash read verify operation failed"` |
-| Simulate Flash Signature Verify Failure | Simulate post-write signature verification failure. | `flashImageFromFile()`, `onCompleted()` | `ERROR_FLASH_VERIFY_SIGNATURE_FAILED = 8` <br>Report: `"Flash image signature failed verification after writing"` |
-| Simulate Unknown / General Error | Inject or trigger unexpected internal failure. | `flashImageFromFile()`, `onCompleted()` | `ERROR_GENERAL = -1` <br>Report: `"Internal failure or unexpected error"` |
+| Test | Description | HAL APIs |
+|------|------------|----------|
+| Verify Successful Flash Operation | 1. Register a valid `IFlashListener` instance.<br>2. Invoke `flashImageFromFile()` with a supported valid image file and verify it returns **true**.<br>3. Monitor `onProgress()` starting at **0%** and verify incremental updates until **100%**.<br>4. Confirm `onCompleted()` is invoked exactly once with *SUCCESS (0)*.<br>5. Repeat for all supported image types. | **IFlash:**<br>&nbsp;&nbsp;flashImageFromFile()<br>**IFlashListener:**<br>&nbsp;&nbsp;onProgress()<br>&nbsp;&nbsp;onCompleted() |
+| Verify Concurrent Flash Handling | 1. Start flashing a valid image.<br>2. While flashing is in progress, invoke `flashImageFromFile()` again.<br>3. Verify second request is rejected (returns false).<br>4. Confirm only one `onCompleted()` is triggered for the active operation. | **IFlash:**<br>&nbsp;&nbsp;flashImageFromFile()<br>**IFlashListener:**<br>&nbsp;&nbsp;onCompleted() |
+| Verify Flash Write Failure Handling | 1. Enable fault injection for flash write failure.<br>2. Start flashing valid image.<br>3. Confirm `onCompleted()` is invoked.<br>4. Verify result is **ERROR_FLASH_WRITE_FAILED (6)**. | `**IFlash:**<br>&nbsp;&nbsp;flashImageFromFile()<br>**IFlashListener:**<br>&nbsp;&nbsp;onCompleted()|
+| Verify Flash Verify Failure Handling | 1. Inject read-back verification failure.<br>2. Start flashing valid image.<br>3. Confirm `onCompleted()` is invoked.<br>4. Verify result is **ERROR_FLASH_VERIFY_FAILED (7)**. | **IFlash:**<br>&nbsp;&nbsp;flashImageFromFile()<br>**IFlashListener:**<br>&nbsp;&nbsp;onCompleted() |
+| Verify Post-Write Signature Failure | 1. Inject post-write signature verification failure.<br>2. Start flashing valid image.<br>3. Confirm `onCompleted()` is invoked.<br>4. Verify result is **ERROR_FLASH_VERIFY_SIGNATURE_FAILED (8)**. |**IFlash:**<br>&nbsp;&nbsp;flashImageFromFile()<br>**IFlashListener:**<br>&nbsp;&nbsp;onCompleted() |
+| Verify General Error Handling | 1. Inject unexpected internal error.<br>2. Invoke `flashImageFromFile()`.<br>3. Confirm `onCompleted()` is invoked.<br>4. Verify result is **ERROR_GENERAL (-1)**. | **IFlash:**<br>&nbsp;&nbsp;flashImageFromFile()<br>**IFlashListener:**<br>&nbsp;&nbsp;onCompleted() |
 
 ### Flash images 
 
