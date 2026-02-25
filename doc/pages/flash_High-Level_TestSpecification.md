@@ -87,10 +87,18 @@ If any validation step fails, flashing is aborted and the corresponding error is
 
 -----------
 
-## Prerequisites
 
-Test evaluates flashing an image file with the initially by copying the image in respective device via UART, IP or USB.
-Respective Device should be connected to power and communication channel should be established.
+### Prerequisites
+
+- The test environment must be configured with the appropriate flash configuration file and flash map prior to execution.
+
+- The image type under test shall match one of the supported and configured image types defined in the flash map.
+
+- The image verification mechanism (e.g., signature validation, checksum/CRC validation, header validation, version checks, etc.) shall be configurable per image type.
+
+- Each supported image type must have its corresponding validation and verification rules properly defined and enabled in the configuration before test execution.
+
+- The test setup must support device reboot simulation and flash progress monitoring, as the flashing operation is asynchronous and interacts directly with the hardware.
 
 **Note:** 
 
