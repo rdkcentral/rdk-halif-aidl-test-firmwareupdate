@@ -98,53 +98,95 @@ using namespace std::chrono;
 using namespace com::rdk::hal;
 using namespace com::rdk::hal::flash;
 
-// Macro for flashImageFromFile - positive case
-#define FLASHIMAGEFROMFILE_SUCCESS(flashHandle,filename,listener) \
+/* =========================================================
+ * SUCCESS MACRO
+ * ========================================================= */
+#define FLASHIMAGEFROMFILE_SUCCESS(flashHandle, filename, listener, maxFlashwaitDurationMs) \
     do { \
         ::android::binder::Status status; \
-        bool _aidl_return; \
-         UT_LOG_DEBUG("Calling flashImageFromFile(IN:filename[%s] IN:listener[%p], OUT:_aidl_return[])", android::String8(filename).string(),listener.get()); \
-        status = (flashHandle)->flashImageFromFile(filename,listener,&_aidl_return); \
-        UT_LOG_DEBUG("Result flashImageFromFile(IN:listener[%p], OUT:_aidl_return[%s]), status:[isOK:%s, exception:%s]", \
-            listener.get(), UT_Control_GetMapString(bool_mapTable_flash, _aidl_return), \
-            UT_Control_GetMapString(bool_mapTable_flash, status.isOk()), \
-            UT_Control_GetMapString(statusFlashException_mapTable, status.exceptionCode())); \
-        UT_ASSERT_TRUE(status.isOk()); \
+        bool _aidl_return = false; \
         UT_ASSERT_NOT_EQUAL_FATAL(listener.get(), nullptr); \
-        UT_ASSERT_EQUAL(status.exceptionCode(), ::android::binder::Status::EX_NONE); \
+        UT_LOG_DEBUG("Calling flashImageFromFile filename[%s]", filename.c_str()); \
+        status = (flashHandle)->flashImageFromFile(filename, listener, &_aidl_return); \
+        UT_ASSERT_TRUE(status.isOk()); \
+        UT_ASSERT_EQUAL(status.exceptionCode(), Status::EX_NONE); \
         UT_ASSERT_TRUE(_aidl_return); \
+        WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs); \
+        UT_ASSERT_EQUAL(listener->result, FlashImageResult::SUCCESS); \
+        UT_ASSERT_TRUE(!listener->progressValues.empty()); \
+        UT_ASSERT_TRUE(listener->progressValues.front() == 0); \
+        UT_ASSERT_TRUE(listener->progressValues.back() == 100); \
     } while (0)
 
-    // Macro for flashImageFromFile - negative case
-#define FLASHIMAGEFROMFILE_FAILURE(flashHandle, filename, listener,exception) \
+/* =========================================================
+ * NEGATIVE MACRO
+ * ========================================================= */
+#define FLASHIMAGEFROMFILE_NEGATIVE(flashHandle, filename, listener, expectedException) \
     do { \
         ::android::binder::Status status; \
-        bool _aidl_return; \
-        UT_LOG_DEBUG("Calling flashImageFromFile(IN:listener[%p], OUT:_aidl_return[])", listener.get()); \
-        status = (flashHandle)->flashImageFromFile(filename,listener,&_aidl_return); \
-        UT_LOG_DEBUG("Result flashImageFromFile(IN:listener[%p], OUT:_aidl_return[%s]), status:[isOK:%s, exception:%s]", \
-            listener.get(), UT_Control_GetMapString(bool_mapTable_flash, _aidl_return), \
-            UT_Control_GetMapString(bool_mapTable_flash, status.isOk()), \
-            UT_Control_GetMapString(statusFlashException_mapTable, status.exceptionCode())); \
-        if (exception == Status::EX_NONE) \
+        bool _aidl_return = false; \
+        UT_LOG_DEBUG("Calling flashImageFromFile filename[%s]", filename.c_str()); \
+        status = (flashHandle)->flashImageFromFile(filename, listener, &_aidl_return); \
+        if (expectedException == Status::EX_NONE) \
+        { \
             UT_ASSERT_TRUE(status.isOk()); \
+        } \
         else \
+        { \
             UT_ASSERT_FALSE(status.isOk()); \
-        UT_ASSERT_EQUAL(status.exceptionCode(), exception); \
-        UT_ASSERT_FALSE(_aidl_return); \ 
+        } \
+        UT_LOG_INFO("Received: exceptionCode()[%d]", status.exceptionCode()); \
+        UT_LOG_INFO("Expected: exceptionCode()[%d]", expectedException); \
+        UT_LOG_INFO("Received AIDL return value: %d", _aidl_return); \
+        \
+        UT_ASSERT_EQUAL(status.exceptionCode(), expectedException); \
+        if (expectedException == Status::EX_NONE) \
+        { \
+            UT_ASSERT_TRUE(_aidl_return); \
+        } \
     } while (0)
 
+#define WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs)                          \
+    do {                                                                                \
+        auto start = std::chrono::steady_clock::now();                                  \
+        while (!(listener)->completed) {                                                \
+            auto now = std::chrono::steady_clock::now();                                \
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(       \
+                now - start).count();                                                   \
+                                                                                        \
+            if (elapsed > (maxFlashwaitDurationMs)) {                                    \
+                UT_LOG_ERROR("WAIT_FOR_COMPLETION timeout after %d ms",                 \
+                             (maxFlashwaitDurationMs));                                  \
+                break;                                                                  \
+            }                                                                           \
+                                                                                        \
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));                \
+        }                                                                               \
+        UT_ASSERT_TRUE((listener)->completed);                                          \
+    } while(0)
 
+/* =========================================================
+ * TEST LISTENER 
+ * ========================================================= */
 class FlashListener : public BnFlashListener
 {
 public:
-    FlashListener(){}
+    FlashListener() = default;
     virtual ~FlashListener() = default;
 
-     ::android::binder::Status onProgress(int32_t percentComplete) override;
-     ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
-};
+    std::atomic<bool> completed{false};
+    std::vector<int> progressValues;
+    FlashImageResult result = FlashImageResult::ERROR_GENERAL;
+    std::string report;
 
+    ::android::binder::Status onProgress(int32_t percentComplete) override;
+    ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
+
+private:
+    std::mutex              mMutex;
+    std::condition_variable mCv;
+
+};
 #endif // __VTS_FLASH_H__
 
 /** @} */ // End of FLASH_HALTEST_HEADER
