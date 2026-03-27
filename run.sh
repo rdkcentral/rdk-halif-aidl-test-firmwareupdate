@@ -60,6 +60,17 @@ start_vcomponent_service()
     if [ -z "$user_config" ]; then
         user_config="$VCOMPONENT_CONFIG_PATH"
     fi
+    if [ ! -f "$user_config" ]; then
+        echo "ERROR: Config file not found: $user_config"
+        echo "Falling back to default config: $VCOMPONENT_CONFIG_PATH"
+
+        # If even the default does not exist ? exit safely
+        if [ ! -f "$VCOMPONENT_CONFIG_PATH" ]; then
+            echo "FATAL: Default config missing: $VCOMPONENT_CONFIG_PATH"
+            exit 1
+        fi
+        user_config="$VCOMPONENT_CONFIG_PATH"
+    fi
     ${RUN_DIR}/$VCOMPONENT_SERVICE_NAME -c "$user_config" &
     vcomponentservice_pid=$!
     # Wait for service to be ready

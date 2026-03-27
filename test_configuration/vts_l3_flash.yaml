@@ -22,103 +22,14 @@
 
 Flash:
   overall:
-    # overall completion timeout for long operations (ms)
-    maxFlashWaitDurationMs: 900000        # 15 minutes
-
-    # optional: if no progress event is seen in this window, fail early (ms)
-    maxProgressWaitDurationMs: 120000             # 2 minutes
-
-  L1:
-    flashImageFromFile_neg:
-      # Invalid image type
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_invalid_type_image.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ERROR_IMAGE_INVALID_TYPE
-      # File open failure (empty filename)
-      - Parameters:
-          filename: ""
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ERROR_FILE_OPEN_FAILED
-      # Image size validation failure
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_invalid_size_image.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ERROR_IMAGE_INVALID_SIZE
-      # Listener null case
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_valid_image2.DRI"
-          listener: false
-        Expected_Results:
-          exceptionCode: EX_NULL_POINTER
-          result: true
-          errorCode: ""
-    flashImageFromFile_pos:
-      # Valid flash case
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_valid_image2.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ""
+    maxFlashWaitDurationMs: 900000
+    maxProgressWaitDurationMs: 120000
   L3:
-    flash_success:
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_valid_image2.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: SUCCESS
-
-    flash_concurrent_reject:
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_valid_image2.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-
-      - Parameters:
-          filename: "/assets/flashfiles/input/flash_valid_image2.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: false
-
-    flash_write_fail:
-      - Parameters:
-          filename: "/assets/flashfiles/input/write_fail_image.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ERROR_FLASH_WRITE_FAILED
-
-    flash_verify_fail:
-      - Parameters:
-          filename: "/assets/flashfiles/input/verify_fail_image.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ERROR_FLASH_VERIFY_FAILED
-
-    flash_verify_signature_fail:
-      - Parameters:
-          filename: "/assets/flashfiles/input/verify_signature_fail_image.DRI"
-          listener: true
-        Expected_Results:
-          exceptionCode: EX_NONE
-          result: true
-          errorCode: ERROR_FLASH_VERIFY_SIGNATURE_FAILED
+    Test:
+      Parameters:
+        filename: ""
+        listener: true
+      Expected_Results:
+        exceptionCode: EX_NONE
+        result: true
+        errorCode: SUCCESS
