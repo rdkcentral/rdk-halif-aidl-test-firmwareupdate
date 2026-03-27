@@ -69,19 +69,24 @@
 android::binder::Status FlashListener::onProgress(int32_t percentComplete)
 {
     UT_LOG_INFO("FlashListener::onProgress called with percentComplete[%d]",percentComplete);
-    progressValues.push_back(percentComplete);
+    std::lock_guard<std::mutex> lock(mMutex);
+    progressSequence.push_back(percentComplete);
+    UT_LOG_INFO("[L3] onProgress: %d%%\n", percentComplete);
+    mCv.notify_all();
     return ::android::binder::Status::ok();
 }
 
 android::binder::Status FlashListener::onCompleted(
-    ::com::rdk::hal::flash::FlashImageResult res,
-    const ::std::string& rep)
+    FlashImageResult result,
+    const std::string& report)
 {
-    UT_LOG_INFO("FlashListener::onCompleted called with FlashImageResult:%d, report:%s",
-                res, rep.c_str());
-    result = res;
-    report = rep;
-    completed = true;
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        finalResult = result;
+        completed = true;
+        UT_LOG_INFO("[L3] onCompleted: result=%d report=%s\n", result, report.c_str());
+    }
+    mCv.notify_all();
     return ::android::binder::Status::ok();
 }
 /** @} */ // End of FLASH_HALTEST_HEADER

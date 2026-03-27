@@ -174,16 +174,15 @@ public:
     FlashListener() = default;
     virtual ~FlashListener() = default;
 
-    std::atomic<bool> completed{false};
-    std::vector<int> progressValues;
-    FlashImageResult result = FlashImageResult::ERROR_GENERAL;
-    std::string report;
+    std::vector<int> progressSequence;
+    FlashImageResult finalResult;
+    bool completed;
 
     ::android::binder::Status onProgress(int32_t percentComplete) override;
     ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
 
 private:
-    std::mutex              mMutex;
+    std::mutex mMutex;
     std::condition_variable mCv;
 
 };

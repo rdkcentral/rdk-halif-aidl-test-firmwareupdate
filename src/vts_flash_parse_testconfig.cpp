@@ -185,7 +185,7 @@ static UT_status_t vts_flash_parse_testconfig_instance(
         testConfiguration.expectedErrorCode = convertErrorCode(std::string(buf));
         testConfiguration.hasErrorCode = true;
 
-        UT_LOG_DEBUG("[VCOMPONENT_FLASH] Parsed errorCode: %s", buf);
+        UT_LOG_DEBUG("[VCOMPONENT_FLASH] Parsed errorCode: %s[%d]", buf, testConfiguration.expectedErrorCode);
     }
     else
     {
@@ -200,16 +200,12 @@ UT_status_t vts_flash_parse_config(
         const char *module,
         const char *testGroup,
         const char *testName,
-       flashTestConfiguration_t &outConfig)
+        flashTestConfiguration_t &outConfig)
 {
     void *testconfig = vcomponentkvp_create_instance(configurationFile);
     if(!testconfig) return UT_STATUS_FAILURE;
 
     ut_kvp_instance_t* kvpInstance = (ut_kvp_instance_t*)testconfig;
-    const std::string testList = std::string(module) + "." + std::string(testGroup) + "." + std::string(testName);
-
-    int32_t testCount = ut_kvp_getListCount(kvpInstance, testList.c_str());
-
     outConfig.testMaxFlashwaitDurationMs = ut_kvp_getUInt32Field(
         kvpInstance,
         "Flash.overall.maxFlashWaitDurationMs");
@@ -226,21 +222,20 @@ UT_status_t vts_flash_parse_config(
         UT_LOG_WARNING("[VCOMPONENT_FLASH] maxProgressWaitDurationMs not set in config, using default 300 ms");
         outConfig.testMaxProgressWaitDurationMs = 300; // default to 300 ms
     }
-    for(int32_t index = 0; index < testCount; index++)
+
     {
         flashValidationConfiguration_t testConfiguration;
-        std::string flashIndex = testList + "." + std::to_string(index);
+        std::string baseKey = "Flash.L3.Test";
 
-        UT_status_t status = vts_flash_parse_testconfig_instance(kvpInstance, flashIndex, testConfiguration);
+        UT_status_t status = vts_flash_parse_testconfig_instance(kvpInstance, baseKey, testConfiguration);
         if(status != UT_STATUS_OK)
         {
-            UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to parse config: %s", flashIndex.c_str());
+            UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to parse config: %s", baseKey.c_str());
             vcomponentkvp_destroy_instance(testconfig);
             return status;
         }
         outConfig.testConfigurations.push_back(testConfiguration);
     }
-    UT_LOG_INFO("[VCOMPONENT_FLASH] Successfully parsed config: %s", testList.c_str());
     vcomponentkvp_destroy_instance(testconfig);
     return UT_STATUS_OK;
 }

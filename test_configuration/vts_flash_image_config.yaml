@@ -1,0 +1,13 @@
+Flash:
+  image_types:
+    PCI: "/assets/flashfiles/input/flash_valid_PCI.bin"
+    DRI: "/assets/flashfiles/input/flash_valid_DRI.bin"
+    SPLASH: "/assets/flashfiles/input/flash_valid_SPLASH.bin"
+    BOOTLOADER: "/assets/flashfiles/input/flash_valid_BOOTLOADER.bin"
+  negative_images:
+    ERROR_IMAGE_INVALID_TYPE: "/assets/flashfiles/input/flash_valid_PCCI.bin"
+    ERROR_IMAGE_INVALID_SIZE: "/assets/flashfiles/input/PCI_invalid_size.bin"
+    ERROR_IMAGE_INVALID_SIGNATURE: "/assets/flashfiles/input/PCI_invalid_signature.bin"
+    ERROR_IMAGE_INVALID_PRODUCT: "/assets/flashfiles/input/PCI_invalid_product.bin"
+    ERROR_FLASH_VERIFY_FAILED: "/assets/flashfiles/input/PCI_verify_fail.bin"
+    ERROR_FLASH_VERIFY_SIGNATURE_FAILED: "/assets/flashfiles/input/PCI_verify_signature_fail.bin"

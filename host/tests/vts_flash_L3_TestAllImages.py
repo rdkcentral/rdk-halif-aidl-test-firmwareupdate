@@ -23,73 +23,72 @@
 
 import os
 import sys
-import time
-import threading
-from typing import Optional, List
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(dir_path, "../"))
 
 from raft.framework.plugins.ut_raft.configRead import ConfigRead
 from raft.framework.core.logModule import logModule
-from raft.framework.plugins.ut_raft import utHelperClass
-from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClass
-from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
 from host.tests.vts_flash_helper import flashHelperClass
 
 FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
 
-class  VTS_FLASH_L3_TestAllImages(flashHelperClass):
+class VTS_FLASH_L3_TestAllImages(flashHelperClass):
     """
-    Runs L3 Set States test
+    Validate all supported Flash image types
     """
     def __init__(self, log:logModule=None):
         """
         Initializes the test class
         """
-        self.testName = "Flash_L3"
+        self.testName = "flash_imageTypes"
         qcId = "1"
         
         super().__init__(self.testName, qcId, log)
-        
+
     def testFunction(self):
         """
-        The main test function to run the L3 Flash tests.
+        Runs L3 Flash Test for all supported image types.
 
         Returns:
-            bool: Final result of the test.
+            bool: True if all tests pass, False otherwise.
         """
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
-        results = False
         result = False
-        self.testcase = "L3-Test cases"
+        overallResult = True
         
-        self.utMenu.start()
+        profileConfiguration = ConfigRead(self.moduleHFPFile, self.profile_moduleName)
+        validImageMap = self.getValidImageList()
 
-        testsuites = self.testCaseConfiguration.fields.get('test_suites')
-        finalresult = True
+        for imageType in profileConfiguration.supportedImages:
+            imageFile = validImageMap.get(imageType)
+            self.updateFlashTestConfig(imageFile, "SUCCESS")
+            self.log.stepStart(
+                f"Validating Test Suit: {FLASH_L3_TEST_SUITE_NAME}"
+                f"Supported Image type: {imageType}, imageFile: {imageFile}" )
 
-        for testsuite in testsuites:
-            testsuite_name = testsuite.get("name")
-            if testsuite_name != FLASH_L3_TEST_SUITE_NAME:
-                continue
+            # Copy YAML to DUT
+            self.utilities.sftpCopy(
+                self.hal_session,
+                self.l3TestConfigFile,
+                self.l3TestConfigFolder
+            )
+            self.utMenu.start()
+            output = self.utMenu.select(
+                FLASH_L3_TEST_SUITE_NAME,
+                self.testName,
+                None,
+                self.waitTime,
+                False
+            )
 
-            test_cases = testsuite.get("test_cases")
+            result = self.utMenu.collect_results(output, True)
+            self.log.stepResult(result, f"Flash L3 mageTypes {imageFile}")
+            if not result:
+                overallResult = False
 
-            if len(test_cases) == 1 and test_cases[0] == "all":
-                self.log.stepStart(f'Test Suit: {testsuite_name} Run all Tests cases')
-                # If 'all' test case mentioned in list, run all tests with 'r' option
-                result = self.runTest(testsuite)
-                self.log.stepResult(result, f'Test Suit: {testsuite_name} Run all Tests cases')
-            else:
-                for test_case in testsuite.get("test_cases"):
-                    self.log.stepStart(f'Test Suit: {testsuite_name} Test Case: {test_case}')
-                    result = self.runTest(testsuite, test_case)
-                    if not result:
-                        finalresult = False
-                    self.log.stepResult(result, f'Test Suit: {testsuite_name} Test Case: {test_case}')
-        return finalresult
-        
+        return overallResult
+
 
 if __name__ == '__main__':
     summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"

@@ -64,51 +64,6 @@
 
 extern sp<IFlash> gFLASHHandle;
 
-    /* -------------------------
-    * Listener with tracking
-    * ------------------------- */
-class FlashL3Listener : public BnFlashListener
-{
-public:
-    FlashL3Listener() : completed(false), finalResult(FlashImageResult::ERROR_GENERAL) {}
-
-        ::android::binder::Status onProgress(int32_t percentComplete) override
-        {
-            std::lock_guard<std::mutex> lock(mMutex);
-            progressSequence.push_back(percentComplete);
-            UT_LOG_INFO("[L3] onProgress: %d%%\n", percentComplete);
-            mCv.notify_all();
-            return ::android::binder::Status::ok();
-        }
-
-        ::android::binder::Status onCompleted(FlashImageResult result, const std::string& report) override
-        {
-            {
-                std::lock_guard<std::mutex> lock(mMutex);
-                finalResult = result;
-                completed = true;
-                UT_LOG_INFO("[L3] onCompleted: result=%d report=%s\n", result, report.c_str());
-            }
-            mCv.notify_all();
-            return ::android::binder::Status::ok();
-        }
-
-        bool waitForCompletion(int timeoutMs = 15000)
-        {
-            std::unique_lock<std::mutex> lock(mMutex);
-            return mCv.wait_for(lock, std::chrono::milliseconds(timeoutMs),
-                                [this]() { return completed; });
-        }
-
-        std::vector<int> progressSequence;
-        FlashImageResult finalResult;
-
-    private:
-        std::mutex mMutex;
-        std::condition_variable mCv;
-        bool completed;
-    };
-
 /* -------------------------
 * Test Group
 * ------------------------- */
@@ -160,12 +115,12 @@ public:
  * | 01 | Parse YAML configuration for flash_success test | Flash.L3.flash_success | Configuration is parsed successfully | Should Pass |@n
  * | 02 | Retrieve valid filename and listener flag from configuration | filename, listener | Valid inputs are retrieved | Should Pass |@n
  * | 03 | Invoke flashImageFromFile API with valid inputs | filename, listener | API returns success status (isOk() == true) and result flag true | Should Pass |@n
- * | 04 | Register listener and monitor progress callbacks | FlashL3Listener | Progress callbacks received incrementally from 0% to 100% | Should Pass |@n
+ * | 04 | Register listener and monitor progress callbacks | FlashListener | Progress callbacks received incrementally from 0% to 100% | Should Pass |@n
  * | 05 | Wait for completion using configured timeout | listener, testMaxFlashwaitDurationMs | Completion callback is received within timeout | Should Pass |@n
  * | 06 | Validate progress sequence | listener->progressSequence | First value is 0 and last value is 100 | Should Pass |@n
  * | 07 | Validate final result | listener->finalResult | Final result equals SUCCESS | Should Pass |
  */
-UT_ADD_TEST(VTS_L3_FLASH, flash_success)
+UT_ADD_TEST(VTS_L3_FLASH, flash_imageTypes)
 {
     flashTestConfiguration_t testConfig;
 
@@ -173,32 +128,44 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_success)
         VTS_FLASH_TEST_CONFIG_PATH,
         "Flash",
         "L3",
-        "flash_success",
+        "Test",
         testConfig);
 
     UT_ASSERT_EQUAL(cfgStatus, UT_STATUS_OK);
     UT_ASSERT_FALSE(testConfig.testConfigurations.empty());
 
     auto &test = testConfig.testConfigurations[0];
-    sp<FlashL3Listener> listener = new FlashL3Listener();
+    sp<FlashListener> listener = new FlashListener();
     bool ret = false;
+
+    UT_LOG_DEBUG("Flashing image: %s", test.filename.c_str());
+
     Status status = gFLASHHandle->flashImageFromFile(
             test.filename,
             listener,
             &ret);
+
     UT_ASSERT_TRUE(status.isOk());
     UT_ASSERT_TRUE(ret);
 
-    UT_LOG_DEBUG("Waiting for flash completion with max wait: %d ms", testConfig.testMaxFlashwaitDurationMs);
-    UT_ASSERT_TRUE(listener->waitForCompletion(testConfig.testMaxFlashwaitDurationMs));
+    if (test.expectedErrorCode != FlashImageResult::SUCCESS)
+    {
+        // skip progress wait
+        UT_ASSERT_EQUAL(listener->finalResult, test.expectedErrorCode);
+        return;
+    }
 
-    UT_ASSERT_FALSE(listener->progressSequence.empty());
-    UT_ASSERT_EQUAL(listener->progressSequence.front(), 0);
-    UT_ASSERT_EQUAL(listener->progressSequence.back(), 100);
-
+    WAIT_FOR_COMPLETION(listener, testConfig.testMaxFlashwaitDurationMs);
     UT_ASSERT_EQUAL(listener->finalResult, FlashImageResult::SUCCESS);
-}
 
+    if (listener->finalResult == FlashImageResult::SUCCESS)
+    {
+        UT_ASSERT_FALSE(listener->progressSequence.empty());
+        UT_ASSERT_EQUAL(listener->progressSequence.front(), 0);
+        UT_ASSERT_EQUAL(listener->progressSequence.back(), 100);
+    }
+
+}
 /**
  * @brief Test successful execution of flashImageFromFile API with valid inputs
  *
@@ -219,12 +186,12 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_success)
  * | 01 | Parse YAML configuration for flash_success test | Flash.L3.flash_success | Configuration is parsed successfully | Should Pass |@n
  * | 02 | Retrieve valid filename and listener flag from configuration | filename, listener | Valid inputs are retrieved | Should Pass |@n
  * | 03 | Invoke flashImageFromFile API with valid inputs | filename, listener | API returns success status (isOk() == true) and result flag true | Should Pass |@n
- * | 04 | Register listener and monitor progress callbacks | FlashL3Listener | Progress callbacks received incrementally from 0% to 100% | Should Pass |@n
+ * | 04 | Register listener and monitor progress callbacks | FlashListener | Progress callbacks received incrementally from 0% to 100% | Should Pass |@n
  * | 05 | Wait for completion using configured timeout | listener, testMaxFlashwaitDurationMs | Completion callback is received within timeout | Should Pass |@n
  * | 06 | Validate progress sequence | listener->progressSequence | First value is 0 and last value is 100 | Should Pass |@n
  * | 07 | Validate final result | listener->finalResult | Final result equals SUCCESS | Should Pass |
  */
-UT_ADD_TEST(VTS_L3_FLASH, flash_concurrent_reject)
+UT_ADD_TEST(VTS_L3_FLASH, flash_concurrentReject)
 {
     flashTestConfiguration_t testConfig;
 
@@ -232,15 +199,15 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_concurrent_reject)
         VTS_FLASH_TEST_CONFIG_PATH,
         "Flash",
         "L3",
-        "flash_concurrent_reject",
+        "Test",
         testConfig);
 
     UT_ASSERT_EQUAL(cfgStatus, UT_STATUS_OK);
     UT_ASSERT_FALSE(testConfig.testConfigurations.empty());
 
     auto &test = testConfig.testConfigurations[0];
-    sp<FlashL3Listener> listener1 = new FlashL3Listener();
-    sp<FlashL3Listener> listener2 = new FlashL3Listener();
+    sp<FlashListener> listener1 = new FlashListener();
+    sp<FlashListener> listener2 = new FlashListener();
     bool ret1 = false, ret2 = false;
 
     // Start first flash
@@ -261,7 +228,8 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_concurrent_reject)
     UT_ASSERT_FALSE(ret2); // must reject
 
     // Only first should complete
-    UT_ASSERT_TRUE(listener1->waitForCompletion(testConfig.testMaxFlashwaitDurationMs));
+    WAIT_FOR_COMPLETION(listener1, testConfig.testMaxFlashwaitDurationMs);
+
     UT_ASSERT_EQUAL(listener1->finalResult, FlashImageResult::SUCCESS); 
 }
 
@@ -288,18 +256,18 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_concurrent_reject)
  * | 04 | Wait for completion callback | listener, timeout | Completion callback is received within timeout | Should Pass |@n
  * | 05 | Validate final result | listener->finalResult | Final result equals ERROR_FLASH_WRITE_FAILED | Should Pass |
  */
-UT_ADD_TEST(VTS_L3_FLASH, flash_write_fail)
+UT_ADD_TEST(VTS_L3_FLASH, flash_validateAllErrorcodes)
 {
     flashTestConfiguration_t testConfig;
 
     vts_flash_parse_config(VTS_FLASH_TEST_CONFIG_PATH,
                         "Flash", "L3",
-                        "flash_write_fail",
+                        "Test",
                         testConfig);
 
     UT_ASSERT_FALSE(testConfig.testConfigurations.empty());
     auto &test = testConfig.testConfigurations[0];
-    sp<FlashL3Listener> listener = new FlashL3Listener();
+    sp<FlashListener> listener = new FlashListener();
     bool ret = false;
     Status status = gFLASHHandle->flashImageFromFile(
             test.filename,
@@ -308,102 +276,13 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_write_fail)
 
     UT_ASSERT_TRUE(status.isOk());
     UT_ASSERT_TRUE(ret);
-
-    UT_ASSERT_TRUE(listener->waitForCompletion(testConfig.testMaxFlashwaitDurationMs));
-
+    WAIT_FOR_COMPLETION(listener, testConfig.testMaxFlashwaitDurationMs);
     UT_ASSERT_EQUAL(listener->finalResult,
-                    FlashImageResult::ERROR_FLASH_WRITE_FAILED);
+                    test.expectedErrorCode);
+    UT_ASSERT_NOT_EQUAL(listener->finalResult,
+                    FlashImageResult::SUCCESS);
 }
-/**
- * @brief Test handling of flash verification failure scenario
- *
- * This test verifies that the flashImageFromFile API correctly detects verification failures
- * after writing the image and returns ERROR_FLASH_VERIFY_FAILED.
- *
- * **Test Group ID:** Advanced: 02@n
- * **Test Case ID:** 004@n
- * **Priority:** High@n
- *
- * **Pre-Conditions:** Verification failure must be injected@n
- * **Dependencies:** None@n
- * **User Interaction:** None@n
- *
- * **Test Procedure:**@n
- * | Variation / Step | Description | Test Data | Expected Result | Notes |@n
- * | :----: | --------- | ---------- |-------------- | ----- |@n
- * | 01 | Parse YAML configuration for verify failure test | Flash.L3.flash_verify_fail | Configuration is parsed successfully | Should Pass |@n
- * | 02 | Retrieve filename and listener | filename, listener | Inputs are valid | Should Pass |@n
- * | 03 | Invoke flashImageFromFile API | filename | API executes and triggers verification failure | Should Pass |@n
- * | 04 | Wait for completion | listener, timeout | Completion callback is received | Should Pass |@n
- * | 05 | Validate final result | listener->finalResult | Final result equals ERROR_FLASH_VERIFY_FAILED | Should Pass |
- */
- UT_ADD_TEST(VTS_L3_FLASH, flash_verify_fail)
-{
-    flashTestConfiguration_t testConfig; 
-    vts_flash_parse_config(VTS_FLASH_TEST_CONFIG_PATH,
-                        "Flash", "L3",
-                        "flash_verify_fail",
-                        testConfig);
-
-    auto &test = testConfig.testConfigurations[0];
-    sp<FlashL3Listener> listener = new FlashL3Listener();
-    bool ret = false;
-    gFLASHHandle->flashImageFromFile(
-            test.filename,
-            listener,
-            &ret);
-
-    UT_ASSERT_TRUE(ret);
-    UT_ASSERT_TRUE(listener->waitForCompletion(testConfig.testMaxFlashwaitDurationMs));
-
-    UT_ASSERT_EQUAL(listener->finalResult,
-                            FlashImageResult::ERROR_FLASH_VERIFY_FAILED);
-        
-}
-
-/**
- * @brief Test handling of post-write signature verification failure
- *
- * This test verifies that the flashImageFromFile API detects signature verification failure
- * after writing the image and returns ERROR_FLASH_VERIFY_SIGNATURE_FAILED.
- *
- * **Test Group ID:** Advanced: 02@n
- * **Test Case ID:** 005@n
- * **Priority:** High@n
- *
- * **Pre-Conditions:** Signature verification failure must be injected@n
- * **Dependencies:** None@n
- * **User Interaction:** None@n
- *
- * **Test Procedure:**@n
- * | Variation / Step | Description | Test Data | Expected Result | Notes |@n
- * | :----: | --------- | ---------- |-------------- | ----- |@n
- * | 01 | Parse YAML configuration for signature failure test | Flash.L3.flash_verify_signature_fail | Configuration is parsed successfully | Should Pass |@n
- * | 02 | Retrieve filename and listener | filename, listener | Inputs are valid | Should Pass |@n
- * | 03 | Invoke flashImageFromFile API | filename | API executes and triggers signature verification failure | Should Pass |@n
- * | 04 | Wait for completion | listener, timeout | Completion callback is received | Should Pass |@n
- * | 05 | Validate final result | listener->finalResult | Final result equals ERROR_FLASH_VERIFY_SIGNATURE_FAILED | Should Pass |
- */
- UT_ADD_TEST(VTS_L3_FLASH, flash_verify_signature_fail)
-{
-    flashTestConfiguration_t testConfig; 
-    vts_flash_parse_config(VTS_FLASH_TEST_CONFIG_PATH,
-                        "Flash", "L3",
-                        "flash_verify_signature_fail",
-                        testConfig);
-
-    auto &test = testConfig.testConfigurations[0];
-    sp<FlashL3Listener> listener = new FlashL3Listener();
-    bool ret = false;
-    gFLASHHandle->flashImageFromFile(
-            test.filename,
-            listener,
-            &ret);
-
-    UT_ASSERT_TRUE(ret);
-    UT_ASSERT_TRUE(listener->waitForCompletion(testConfig.testMaxFlashwaitDurationMs));
-
-    UT_ASSERT_EQUAL(listener->finalResult,
-                        FlashImageResult::ERROR_FLASH_VERIFY_SIGNATURE_FAILED);
-    
-}
+/** @} */ // End of FLAH_HALTEST_L1
+/** @} */ // End of FLASH_HALTEST
+/** @} */ // End of FLASH Module
+/** @} */ // End of HPK

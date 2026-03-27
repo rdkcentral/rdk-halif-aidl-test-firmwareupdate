@@ -30,3 +30,5 @@ deviceConfig:
         target_directory: "/tmp/"
         prompt: "~#" # Prompt string on console
         wait_time: 240 #Configurable timeout value to limit the total duration of individual tests
+        test:
+            profile: "../../profile/hfp-flash-vcomponent.yaml"

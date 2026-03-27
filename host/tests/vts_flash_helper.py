@@ -39,6 +39,7 @@ from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
 
 FLASH_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_flash_testMenuConfiguration.yaml")
 FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(os.path.join(dir_path, "../configs"), "vts_flash_testcase_configuration.yaml")
+FLASH_IMAGES_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_flash_image_config.yaml")
 FLASH_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_l3_flash.yaml")
 
 class flashHelperClass(utHelperClass):
@@ -59,15 +60,8 @@ class flashHelperClass(utHelperClass):
         # Parse device configuration
         self.deviceTestSetup = self.cpe.get("test")
         self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName)
-        # self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
-        # profileOnTarget = os.path.join(self.targetWorkspace, "profiles")
-        # profileOnTarget = os.path.join(profileOnTarget, os.path.basename(self.moduleHFPFile))
-        # profileOnTarget = profileOnTarget.replace("\\", "/")
-
-        # self.PlatformLEDConfigFile = os.path.join(dir_path, self.deviceTestSetup.get("platform_led_config"))
-        # platformConfigOnTarget = os.path.join(self.targetWorkspace, "test_configuration")
-        # platformConfigOnTarget = os.path.join(platformConfigOnTarget, os.path.basename(self.PlatformLEDConfigFile))
-        # platformConfigOnTarget = platformConfigOnTarget.replace("\\", "/")
+        self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
+        self.moduleHFPFile = self.moduleHFPFile.replace("\\", "/")
 
         self.l3TestConfigFolder = os.path.join(self.targetWorkspace, "test_configuration")
         self.l3TestConfigFolder = self.l3TestConfigFolder.replace("\\", "/")
@@ -80,7 +74,8 @@ class flashHelperClass(utHelperClass):
         self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
         self.testMenuConfiguration = ConfigRead(FLASH_TEST_MENU_CONFIGURATION_FILE, self.moduleName)
         self.testCaseConfiguration = ConfigRead(FLASH_TESTCASES_CONFIGURATION_FILE, self.moduleName)
-        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute # + f" -p {profileOnTarget}"
+        self.testImageList = ConfigRead(FLASH_IMAGES_CONFIG_FILE, self.moduleName)
+        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute
 
         # Establish HAL session
         self.hal_session = self.dut.getConsoleSession("ssh_hal_test")
@@ -145,7 +140,55 @@ class flashHelperClass(utHelperClass):
             data (dict): Content to write to the YAML file
         """
         with open(yaml_path, "w") as f:
-            yaml.dump(data, f, sort_keys=False, default_flow_style=None)
+            yaml.dump(data, f, sort_keys=False, default_flow_style=False)
+
+    def getValidImageList(self):
+        """
+        Convert ConfigRead.image_types to a real Python dictionary.
+        """
+        image_obj = self.testImageList.image_types
+        image_dict = {}
+        for key in dir(image_obj):
+            if key.startswith("_"):
+                continue
+            value = getattr(image_obj, key)
+            if isinstance(value, str):
+                image_dict[key] = value
+        return image_dict
+
+    def getNegativeImageList(self) -> dict:
+        """Return negative_images as a clean dictionary: {errorCode: filename}."""
+        try:
+            # ConfigRead maps YAML to an object; convert to dict
+            return dict(self.testImageList.negative_images.__dict__)
+        except Exception:
+            # fallback for safety
+            obj = self.testImageList.negative_images
+            out = {}
+            for key in dir(obj):
+                if not key.startswith("_"):
+                    val = getattr(obj, key)
+                    if isinstance(val, str):
+                        out[key] = val
+            return out
+
+    def updateFlashTestConfig(self, filename: str, expectedResult: str):
+        """
+        Updates the Flash L3 YAML for single-image mode.
+        """
+        data = self.flashReadYaml(self.l3TestConfigFile)
+
+        params = data["Flash"]["L3"]["Test"]["Parameters"]
+        expected = data["Flash"]["L3"]["Test"]["Expected_Results"]
+
+        params["filename"] = filename
+        params["listener"] = True
+
+        expected["exceptionCode"] = "EX_NONE"
+        expected["result"] = True
+        expected["errorCode"] = expectedResult
+
+        self.flashWriteYaml(self.l3TestConfigFile, data)
 
     def updateTestconfigurationFile(self, set_state:str, states_list:list, stress:bool):
         """

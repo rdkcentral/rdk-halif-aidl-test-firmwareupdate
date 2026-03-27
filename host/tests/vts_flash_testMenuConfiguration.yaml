@@ -32,13 +32,10 @@ Flash:
             0:
                 name: "VTS_L1_FLASH"
                 tests: 
-                    - "flashImageFromFile_neg"
-                    - "flashImageFromFile_pos"
+                    - "flashImageFromFile_invalid_params"
             1:
                 name: "VTS_L3_FLASH"
                 tests:
-                    - "flash_success"
-                    - "flash_concurrent_reject"
-                    - "flash_write_fail"
-                    - "flash_verify_fail"
-                    - "flash_verify_signature_fail"
+                    - "flash_imageTypes"
+                    - "flash_concurrentReject"
+                    - "flash_validateAllErrorcodes"
