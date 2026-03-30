@@ -162,14 +162,98 @@ python <vts_flash_L3_xxx>.py \
 
 ---
 
-# L3 Test Cases
+## Flash Image Configuration File
+`vts_flash_image_config.yaml`
+
+```yaml
+Flash:
+  image_types:
+    PCI: "<path_to_actual_PCI_flash_image>"
+    DRI: "<path_to_actual_DRI_flash_image>"
+    SPLASH: "<path_to_actual_SPLASH_flash_image>"
+    BOOTLOADER: "<path_to_actual_BOOTLOADER_flash_image>"
+
+  negative_images:
+    ERROR_IMAGE_INVALID_TYPE: "<path_to_invalid_type_image>"
+    ERROR_IMAGE_INVALID_SIZE: "<path_to_invalid_size_image>"
+    ERROR_IMAGE_INVALID_SIGNATURE: "<path_to_invalid_signature_image>"
+    ERROR_IMAGE_INVALID_PRODUCT: "<path_to_invalid_product_image>"
+    ERROR_FLASH_VERIFY_FAILED: "<path_to_verify_fail_image>"
+    ERROR_FLASH_VERIFY_SIGNATURE_FAILED: "<path_to_verify_signature_fail_image>"
+```
+
+---
+
+## Notes
+
+### VCOMPONENT MODE
+When testing in vComponent mode, images are generated dynamically and copied automatically into:
+
+```
+<target_directory>/Flash/images/
+```
+
+Example target directory:
+```
+/ tmp /
+```
+
+So image paths become:
+
+```
+/tmp/Flash/images/flash_valid_PCI.bin
+/tmp/Flash/images/flash_valid_DRI.bin
+/tmp/Flash/images/flash_valid_SPLASH.bin
+/tmp/Flash/images/flash_valid_BOOTLOADER.bin
+
+/tmp/Flash/images/flash_valid_PCCI.bin
+/tmp/Flash/images/PCI_invalid_size.bin
+/tmp/Flash/images/PCI_invalid_signature.bin
+/tmp/Flash/images/PCI_invalid_product.bin
+/tmp/Flash/images/PCI_verify_fail.bin
+/tmp/Flash/images/PCI_verify_signature_fail.bin
+```
+
+---
+
+### ACTUAL HARDWARE COMPONENT MODE
+For real hardware testing:
+
+- Replace `<path_to_…>` in the YAML with **real** flash image paths on the DUT.
+- Each negative test image must represent the **actual expected failure case**:
+  - invalid type
+  - invalid size
+  - invalid signature
+  - invalid product mismatch
+  - verify fail
+  - signature verify fail
+
+---
+
+## Example Mapping Table
+
+| Test Case | VComponent Path | Actual Component Path |
+|----------|------------------|------------------------|
+| **PCI** | `/tmp/Flash/images/flash_valid_PCI.bin` | `<path_to_actual_PCI_flash_image>` |
+| **DRI** | `/tmp/Flash/images/flash_valid_DRI.bin` | `<path_to_actual_DRI_flash_image>` |
+| **SPLASH** | `/tmp/Flash/images/flash_valid_SPLASH.bin` | `<path_to_actual_SPLASH_flash_image>` |
+| **BOOTLOADER** | `/tmp/Flash/images/flash_valid_BOOTLOADER.bin` | `<path_to_actual_BOOTLOADER_flash_image>` |
+| **ERROR_IMAGE_INVALID_TYPE** | `/tmp/Flash/images/flash_valid_PCCI.bin` | `<path_to_invalid_type_image>` |
+| **ERROR_IMAGE_INVALID_SIZE** | `/tmp/Flash/images/PCI_invalid_size.bin` | `<path_to_invalid_size_image>` |
+| **ERROR_IMAGE_INVALID_SIGNATURE** | `/tmp/Flash/images/PCI_invalid_signature.bin` | `<path_to_invalid_signature_image>` |
+| **ERROR_IMAGE_INVALID_PRODUCT** | `/tmp/Flash/images/PCI_invalid_product.bin` | `<path_to_invalid_product_image>` |
+| **ERROR_FLASH_VERIFY_FAILED** | `/tmp/Flash/images/PCI_verify_fail.bin` | `<path_to_verify_fail_image>` |
+| **ERROR_FLASH_VERIFY_SIGNATURE_FAILED** | `/tmp/Flash/images/PCI_verify_signature_fail.bin` | `<path_to_verify_signature_fail_image>` |
+
+
 
 **Test Configuration File:**
+
 `vts_l3_flash.yaml`
 
 ---
 
-## 1. Validate All Error Codes — `vts_flash_L3_TestAllImages.py`
+## 1. Validate All Error Codes — `vts_flash_L3_validateAllErrorcodes.py`
 
 ### Purpose
 
@@ -295,24 +379,6 @@ graph TD
 
 ---
 
-### Sequence Diagram
-
-```mermaid
-sequenceDiagram
-    participant Host
-    participant DUT
-    participant HAL
-    participant Listener
-
-    Host->>DUT: Copy YAML
-    Host->>DUT: Run UT Menu
-    DUT->>HAL: flashImageFromFile()
-    HAL->>Listener: Progress callbacks
-    HAL->>Listener: Completion
-    DUT->>Host: Results
-```
-
----
 
 ## Notes
 
@@ -348,13 +414,37 @@ Flash:
 
 ---
 
-### Windows Notes
+## Note
 
-* Remove:
+### Test Setup on vDevice
 
-```python
-import pty
-import fcntl
+To validate automation on vDevice, create a password for the root user using the following command:
+
+```bash
+passwd root
 ```
+
+Then, update the same password in the `vts_rack_configuration.yaml` file.
+
+Currently, the Python `paramiko` library does not support empty passwords on vDevice, so setting a password is necessary.
+
+### Run on Windows Environment
+
+To run the Python environment tests in a Windows environment, follow these additional steps after checking out the repository and compiling the code:
+
+1. Install the python environment and update the rack configuration files as in the Linux environment.
+
+2. Move the entire project folder (including `host`) to the Windows machine.
+
+3. Open the file located at `framework/plugins/ut_raft/interactive_shell.py`.
+
+   - Comment out or remove the following import lines to avoid errors on Windows:
+     ```python
+     import pty
+     import fcntl
+     ```
+
+4. After these changes, run the test cases using Python on the Windows system.
+
 
 ---
