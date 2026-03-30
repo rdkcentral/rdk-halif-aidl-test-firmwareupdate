@@ -102,7 +102,8 @@ If any validation step fails, flashing is aborted and the corresponding error is
 
 **Note:** 
 
-Since the Flash HAL exposes only a single function (`flashImageFromFile()`), L2 testing is not applicable.  
+This feature does not have corresponding L2 system‑level requirements. The flash image handling functionality is implemented as an internal HAL/module‑level API. 
+All behaviours are covered under L3 module‑level requirements; hence, L2 testing is not applicable.
 
 L3 testing requires test setup capable of simulating device reboots and monitoring flash progress, as the operation is asynchronous and interacts directly with the hardware.
 
