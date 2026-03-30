@@ -162,7 +162,7 @@ python <vts_flash_L3_xxx>.py \
 
 ---
 
-## Flash Image Configuration File
+### Flash Image Configuration File
 `vts_flash_image_config.yaml`
 
 ```yaml
@@ -184,9 +184,9 @@ Flash:
 
 ---
 
-## Notes
+#### Notes
 
-### VCOMPONENT MODE
+##### VCOMPONENT MODE
 When testing in vComponent mode, images are generated dynamically and copied automatically into:
 
 ```
@@ -216,7 +216,7 @@ So image paths become:
 
 ---
 
-### ACTUAL HARDWARE COMPONENT MODE
+##### ACTUAL HARDWARE COMPONENT MODE
 For real hardware testing:
 
 - Replace `<path_to_…>` in the YAML with **real** flash image paths on the DUT.
@@ -230,7 +230,7 @@ For real hardware testing:
 
 ---
 
-## Example Mapping Table
+##### Example Mapping Table
 
 | Test Case | VComponent Path | Actual Component Path |
 |----------|------------------|------------------------|
@@ -246,10 +246,11 @@ For real hardware testing:
 | **ERROR_FLASH_VERIFY_SIGNATURE_FAILED** | `/tmp/Flash/images/PCI_verify_signature_fail.bin` | `<path_to_verify_signature_fail_image>` |
 
 
-
-**Test Configuration File:**
+### Flash Test Configuration File
 
 `vts_l3_flash.yaml`
+Note:
+- This config File will be updated by running L3 python test cases
 
 ---
 
