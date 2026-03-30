@@ -100,7 +100,7 @@ generate_hal_interfaces()
     # Clone the repository if not already present
     if [ ! -d "$RDK_HAL_DIR" ]; then
         echo "Checking out version: " $RDK_HALIF_AIDL_VERSION
-        git clone -b $RDK_HALIF_AIDL_VERSION 'http://git@github.com/rdkcentral/rdk-halif-aidl.git' $RDK_HAL_DIR
+        git clone -b $RDK_HALIF_AIDL_VERSION 'https://github.com/rdkcentral/rdk-halif-aidl.git' $RDK_HAL_DIR
     fi
 
     # Iterate through the HALIF compoenents
@@ -194,8 +194,7 @@ build_vcomponent_services()
 
     pushd ${VCOMPONENT_DIR}
 
-    #git checkout ${VCOMPONENT_FLASH_VERSION}
-    git checkout feature/gh3_Vcomponent_changes #Remove this line, once vcomponent PR is merged
+    git checkout ${VCOMPONENT_FLASH_VERSION}
 
     make -j"$(nproc)" -C "${TOP}/vcomponent" BUILD_DIR="${TOP_BUILD_DIR}" UT_CORE_DIR="${UT_CORE_DIR}"
     if [ $? -ne 0 ]; then

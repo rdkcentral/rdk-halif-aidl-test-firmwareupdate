@@ -206,7 +206,11 @@ UT_status_t vts_flash_parse_config(
         flashTestConfiguration_t &outConfig)
 {
     void *testconfig = vcomponentkvp_create_instance(configurationFile);
-    if(!testconfig) return UT_STATUS_FAILURE;
+    if(!testconfig)
+    {
+        UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to create test configuration instance");
+        return UT_STATUS_FAILURE;
+    }
 
     ut_kvp_instance_t* kvpInstance = (ut_kvp_instance_t*)testconfig;
     outConfig.testMaxFlashwaitDurationMs = ut_kvp_getUInt32Field(
