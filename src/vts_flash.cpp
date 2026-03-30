@@ -89,6 +89,15 @@ android::binder::Status FlashListener::onCompleted(
     mCv.notify_all();
     return ::android::binder::Status::ok();
 }
+
+bool FlashListener::waitForCompletion(int maxWaitMs)
+{
+    std::unique_lock<std::mutex> lock(mMutex);
+
+    return mCv.wait_for(lock,
+                        std::chrono::milliseconds(maxWaitMs),
+                        [this]() { return completed; });
+}
 /** @} */ // End of FLASH_HALTEST_HEADER
 /** @} */ // End of FLASH_HALTEST
 /** @} */ // End of FLASH

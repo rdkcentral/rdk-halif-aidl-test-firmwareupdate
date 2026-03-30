@@ -133,29 +133,24 @@ public:
     UT_ASSERT_TRUE(gFLASHHandle != nullptr);
 
     // 1. Null listener
-    {
-        bool ret = false;
-        auto status = gFLASHHandle->flashImageFromFile(
-            "valid_image.bin",
-            nullptr,
-            &ret
-        );
-
-        UT_ASSERT_TRUE(status.exceptionCode() == Status::EX_NULL_POINTER);
-    }
+    FLASHIMAGEFROMFILE_NEGATIVE(
+        gFLASHHandle,
+        std::string("valid_image.bin"),
+        nullptr,
+        Status::EX_NULL_POINTER
+    );
 
     // 2. Empty filename
     {
         sp<FlashListener> listener = new FlashListener();
-        bool ret = false;
 
-        auto status = gFLASHHandle->flashImageFromFile(
-            "",
+        FLASHIMAGEFROMFILE_NEGATIVE(
+            gFLASHHandle,
+            std::string(""),
             listener,
-            &ret
+            Status::EX_NONE
         );
 
-        UT_ASSERT_TRUE(status.exceptionCode() == Status::EX_NONE);
         WAIT_FOR_COMPLETION(listener, 5000);
 
         UT_ASSERT_EQUAL(listener->finalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
@@ -164,15 +159,14 @@ public:
     // 3. Non-existent file
     {
         sp<FlashListener> listener = new FlashListener();
-        bool ret = false;
 
-        auto status = gFLASHHandle->flashImageFromFile(
-            "non_existent.bin",
+        FLASHIMAGEFROMFILE_NEGATIVE(
+            gFLASHHandle,
+            std::string("non_existent.bin"),
             listener,
-            &ret
+            Status::EX_NONE
         );
 
-        UT_ASSERT_TRUE(status.exceptionCode() == Status::EX_NONE);
         WAIT_FOR_COMPLETION(listener, 5000);
 
         UT_ASSERT_EQUAL(listener->finalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);

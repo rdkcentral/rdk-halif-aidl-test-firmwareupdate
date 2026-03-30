@@ -164,7 +164,20 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_imageTypes)
         UT_ASSERT_EQUAL(listener->progressSequence.front(), 0);
         UT_ASSERT_EQUAL(listener->progressSequence.back(), 100);
     }
+    // Determine expected increments from the profile
+    int stepPercent = test.stepPercent; // get from YAML profile
+    int expectedValue = 0;
 
+    for (size_t i = 0; i < listener->progressSequence.size(); ++i)
+    {
+        // Ensure value matches expected or is the last 100%
+        if (expectedValue > 100) expectedValue = 100;
+
+        UT_ASSERT_EQUAL(listener->progressSequence[i], expectedValue);
+        UT_LOG_DEBUG("Progress[%zu] = %d%%", i, listener->progressSequence[i]);
+
+        expectedValue += stepPercent;
+    }
 }
 /**
  * @brief Test successful execution of flashImageFromFile API with valid inputs

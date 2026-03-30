@@ -209,6 +209,39 @@ build_vcomponent_services()
 }
 
 ###############################################################################
+# Function to create the Flash bin for vcomponent
+###############################################################################
+get_vcomponent_flash_images()
+{
+    echo "Calling get_vcomponent_flash_images"
+    # Create the input directory for flash images
+    FLASH_DIR="$TOP_BUILD_DIR/bin/images"
+
+    mkdir -p "$FLASH_DIR"
+    echo "FLASH_DIR=$FLASH_DIR"
+    # List of all flash images (from your YAML)
+    FLASH_IMAGES=(
+        "flash_valid_PCI.bin"
+        "flash_valid_DRI.bin"
+        "flash_valid_SPLASH.bin"
+        "flash_valid_BOOTLOADER.bin"
+        "flash_valid_PCCI.bin"
+        "PCI_invalid_size.bin"
+        "PCI_invalid_signature.bin"
+        "PCI_invalid_product.bin"
+        "PCI_verify_fail.bin"
+        "PCI_verify_signature_fail.bin"
+    )
+
+    # Create each file using touch
+    for file in "${FLASH_IMAGES[@]}"; do
+        touch "$FLASH_DIR/$file"
+        echo "Created flash image: $FLASH_DIR/$file"
+    done
+}
+
+
+###############################################################################
 # Function to Build HALIF test
 ###############################################################################
 build_halif_test()
@@ -309,6 +342,7 @@ elif [[ "$1" == [Tt]arget=* ]]; then
     build_ut_core
     build_halif_test
     build_vcomponent_services
+    get_vcomponent_flash_images
     install_test
     echo -e "${BOLD}╔════════════════════════════════╗${RESET}"
     echo -e "${BOLD}* ${GREEN}Build Successful${RESET}               ${BOLD}*${RESET}"

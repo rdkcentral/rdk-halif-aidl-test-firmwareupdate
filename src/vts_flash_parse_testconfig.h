@@ -78,7 +78,7 @@ typedef struct
     // Parameters
     std::string     filename;
     bool            listener{true};
-
+    int        stepPercent{10};
     // EX_NONE(0) means the IPC call returned ok().
     int32_t         expectedException{0};
 

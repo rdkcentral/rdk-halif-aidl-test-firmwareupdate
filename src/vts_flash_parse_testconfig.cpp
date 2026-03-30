@@ -163,6 +163,9 @@ static UT_status_t vts_flash_parse_testconfig_instance(
     /* listener */
     testConfiguration.listener = ut_kvp_getBoolField(kvpInstance, (parametersKey + ".listener").c_str());
 
+    /* step_percent */
+    testConfiguration.stepPercent = ut_kvp_getUInt32Field(kvpInstance, (parametersKey + ".step_percent").c_str());
+
     /* Expected results */
     const std::string expectedKey = flashKey + ".Expected_Results";
 

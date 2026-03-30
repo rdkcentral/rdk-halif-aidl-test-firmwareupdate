@@ -172,7 +172,7 @@ class flashHelperClass(utHelperClass):
                         out[key] = val
             return out
 
-    def updateFlashTestConfig(self, filename: str, expectedResult: str):
+    def updateFlashTestConfig(self, filename: str, expectedResult: str, stepPercent: int = 0):
         """
         Updates the Flash L3 YAML for single-image mode.
         """
@@ -183,6 +183,7 @@ class flashHelperClass(utHelperClass):
 
         params["filename"] = filename
         params["listener"] = True
+        params["step_percent"] = stepPercent
 
         expected["exceptionCode"] = "EX_NONE"
         expected["result"] = True

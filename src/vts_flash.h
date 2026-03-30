@@ -146,23 +146,16 @@ using namespace com::rdk::hal::flash;
         } \
     } while (0)
 
-#define WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs)                          \
-    do {                                                                                \
-        auto start = std::chrono::steady_clock::now();                                  \
-        while (!(listener)->completed) {                                                \
-            auto now = std::chrono::steady_clock::now();                                \
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(       \
-                now - start).count();                                                   \
-                                                                                        \
-            if (elapsed > (maxFlashwaitDurationMs)) {                                    \
-                UT_LOG_ERROR("WAIT_FOR_COMPLETION timeout after %d ms",                 \
-                             (maxFlashwaitDurationMs));                                  \
-                break;                                                                  \
-            }                                                                           \
-                                                                                        \
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));                \
-        }                                                                               \
-        UT_ASSERT_TRUE((listener)->completed);                                          \
+#define WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs)                  \
+    do {                                                                       \
+        bool completed = (listener)->waitForCompletion(maxFlashwaitDurationMs);\
+                                                                               \
+        if (!completed) {                                                      \
+            UT_LOG_ERROR("WAIT_FOR_COMPLETION timeout after %d ms",           \
+                         (maxFlashwaitDurationMs));                            \
+        }                                                                      \
+                                                                               \
+        UT_ASSERT_TRUE((listener)->completed);                                 \
     } while(0)
 
 /* =========================================================
@@ -180,7 +173,7 @@ public:
 
     ::android::binder::Status onProgress(int32_t percentComplete) override;
     ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
-
+    bool waitForCompletion(int maxWaitMs);
 private:
     std::mutex mMutex;
     std::condition_variable mCv;
