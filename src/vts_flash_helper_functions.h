@@ -37,12 +37,12 @@
  */
 
 /**
- * @addtogroup FLASH_HALTEST HDMI FLASH HAL Tests
+ * @addtogroup FLASH_HALTEST FLASH HAL Tests
  * @{
  */
 
 /**
- * @defgroup HDMI_FLASH_HALTEST_HELPER_HEADER HDMI FLASH HAL Tests helper functions Header File
+ * @defgroup FLASH_HALTEST_HELPER_HEADER FLASH HAL Tests helper functions Header File
  * @{
  * @parblock
  *
@@ -70,7 +70,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-
+#include <chrono>
 #include <ut.h>
 #include <ut_log.h>
 #include <ut_kvp_profile.h>
@@ -87,17 +87,10 @@
 #include "com/rdk/hal/flash/FlashImageResult.h"
 #include "com/rdk/hal/flash/IFlashListener.h"
 
-#include "vts_flash_helper_functions.h"
-
 using android::sp;
 using android::String16;
 using android::defaultServiceManager;
 using android::binder::Status;
-using namespace std;
-using namespace std::chrono;
-
-using namespace com::rdk::hal;
-using namespace com::rdk::hal::flash;
 
 extern const ut_control_keyStringMapping_t bool_mapTable_flash[];
 extern const ut_control_keyStringMapping_t statusFlashException_mapTable[];

@@ -104,7 +104,7 @@ typedef struct
 } flashTestConfiguration_t;
 #define VTS_FLASH_TEST_CONFIG_PATH "./test_configuration/vts_l3_flash.yaml"
 
-UT_status_t vts_flash_parse_config(char *configurationFile, const char *module, const char *testGroup,
+UT_status_t vts_flash_parse_config(const char *configurationFile, const char *module, const char *testGroup,
                                        const char *testName, flashTestConfiguration_t &outConfig);
 #endif //__VTS_FLASH_PARSE_TESTCONFIG_H__
 

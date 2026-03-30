@@ -71,7 +71,7 @@ using android::binder::Status;
 /**
  * @brief Create ut_kvp instance
  */
-static void* vcomponentkvp_create_instance(char *fileName)
+static void* vcomponentkvp_create_instance(const char *fileName)
 {
     ut_kvp_instance_t* instance;
     ut_kvp_status_t result;
@@ -84,7 +84,7 @@ static void* vcomponentkvp_create_instance(char *fileName)
         return nullptr;
     }
 
-    result = ut_kvp_open(instance, fileName);
+    result = ut_kvp_open(instance, (char *)fileName);
 
     if(result != UT_KVP_STATUS_SUCCESS)
     {
@@ -199,7 +199,7 @@ static UT_status_t vts_flash_parse_testconfig_instance(
 
 /* Parse Flash test configuration file */
 UT_status_t vts_flash_parse_config(
-        char *configurationFile,
+        const char *configurationFile,
         const char *module,
         const char *testGroup,
         const char *testName,

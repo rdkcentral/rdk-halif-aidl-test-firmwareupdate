@@ -32,23 +32,23 @@
  */
 
 /**
- * @addtogroup HDMI_CEC HDMI CEC Module
+ * @addtogroup FLASH  Module
  * @{
  */
 
 /**
- * @addtogroup HDMI_CEC_HALTEST HDMI CEC HAL Tests
+ * @addtogroup FLASH_HALTEST FLASH HAL Tests
  * @{
  */
 
 /**
- * @defgroup HDMI_CEC_HALTEST_CLASS HDMI CEC HAL Tests helper functions Header File
+ * @defgroup FLASH_HALTEST_HELPER_HEADER FLASH HAL Tests helper functions Header File
  * @{
  * @parblock
  *
- * ### Common functions/macros required for the HDMI CEC module :
+ * ### Common functions/macros required for the FLASH module :
  *
- * Common functions/macros required for the HDMI CEC module .
+ * Common functions/macros required for the FLASH module .
  *
  * **Pre-Conditions:**  None @n
  * **Dependencies:** None @n

@@ -29,7 +29,7 @@ Flash:
       Parameters:
         filename: ""
         listener: true
-        step_percent:0
+        step_percent: 0
       Expected_Results:
         exceptionCode: EX_NONE
         result: true

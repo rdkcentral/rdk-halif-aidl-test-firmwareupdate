@@ -95,7 +95,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
 
         result = self.utMenu.collect_results(output, True)
         self.log.stepResult(result, f"Flash L3 Concurrent Flashing {imageFile}")
-
+        return result
 
 if __name__ == '__main__':
     summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"

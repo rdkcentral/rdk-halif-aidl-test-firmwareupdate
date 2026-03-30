@@ -76,7 +76,8 @@
 #include <ut_control_plane.h>
 #include <chrono>
 #include <thread>
-
+#include <mutex>
+#include <condition_variable>
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
 #include <binder/IPCThreadState.h>
@@ -168,8 +169,8 @@ public:
     virtual ~FlashListener() = default;
 
     std::vector<int> progressSequence;
-    FlashImageResult finalResult;
-    bool completed;
+    FlashImageResult finalResult = FlashImageResult::ERROR_GENERAL;
+    bool completed = false;
 
     ::android::binder::Status onProgress(int32_t percentComplete) override;
     ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;

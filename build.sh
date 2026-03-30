@@ -51,7 +51,7 @@ declare -r BUILD_INSTALL_PREFIX=${TOP_BUILD_DIR}/usr
 declare -r AIDL_LIB_DIR=${TOP}/aidl_lib
 declare -r RDK_HAL_DIR=${TOP}/rdk-halif-aidl
 declare -r RDK_HAL_TEST_DIR=${TOP}/vts_hal_test_components
-declare -r PROFILES_DIR=${TOP}/profiles
+declare -r PROFILES_DIR=${TOP}/profile
 declare -r AV_L4_TEST_DIR=${RDK_HAL_TEST_DIR}/av_l4_tests
 
 DEF_LINUX_BINDER="`realpath ${TOP}/../`/linux_binder_idl"
