@@ -93,5 +93,5 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
 if __name__ == '__main__':
     summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"
     summaryLog  = logModule(summaryLogName, level=logModule.INFO)
-    test = VTS_FLASH_L3_TestAllImages(summaryLog )
+    test = VTS_FLASH_L3_ValidateAllErrorCodes(summaryLog )
     test.run(False)
