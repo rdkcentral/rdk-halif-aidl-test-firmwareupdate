@@ -33,7 +33,7 @@ from host.tests.vts_flash_helper import flashHelperClass
 
 FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
 
-class VTS_FLASH_L3_TestAllImages(flashHelperClass):
+class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
     """
     Validate all supported Flash image types
     """
