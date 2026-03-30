@@ -72,10 +72,8 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
         imageFile = validImageMap.get(imageType)
         
         self.updateFlashTestConfig(imageFile, "SUCCESS")
-        self.log.stepStart(
-            f"Validating Test Suit: {FLASH_L3_TEST_SUITE_NAME}"
-            f"Supported Image type: {imageType}, imageFile: {imageFile}" 
-        )
+        self.log.stepStart(f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+        self.log.step(f'Supported Image type: {imageType}, imageFile: {imageFile}')
 
         # Copy YAML to DUT
         self.utilities.sftpCopy(
@@ -94,7 +92,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
         )
 
         result = self.utMenu.collect_results(output, True)
-        self.log.stepResult(result, f"Flash L3 Concurrent Flashing {imageFile}")
+        self.log.stepResult(result, f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
         return result
 
 if __name__ == '__main__':

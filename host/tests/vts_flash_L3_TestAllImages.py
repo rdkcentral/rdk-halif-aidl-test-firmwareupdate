@@ -64,9 +64,8 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
             imageFile = validImageMap.get(imageType)
             stepPercent = profileConfiguration.progress.step_percent
             self.updateFlashTestConfig(imageFile, "SUCCESS", stepPercent)
-            self.log.stepStart(
-                f"Validating Test Suit: {FLASH_L3_TEST_SUITE_NAME}"
-                f"Supported Image type: {imageType}, imageFile: {imageFile}, stepPercent: {stepPercent}" )
+            self.log.stepStart(f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+            self.log.step(f'Supported Image type: {imageType}, imageFile: {imageFile}')
 
             # Copy YAML to DUT
             self.utilities.sftpCopy(
@@ -84,7 +83,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
             )
 
             result = self.utMenu.collect_results(output, True)
-            self.log.stepResult(result, f"Flash L3 mageTypes {imageFile}")
+            self.log.stepResult(result, f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
             if not result:
                 overallResult = False
 

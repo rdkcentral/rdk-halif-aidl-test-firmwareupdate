@@ -60,9 +60,8 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
         negativeMap = self.getNegativeImageList()
         for errorCode, imageFile in negativeMap.items():
             self.updateFlashTestConfig(imageFile, errorCode)
-            self.log.stepStart(
-                f"Validating Test Suite: {FLASH_L3_TEST_SUITE_NAME}"
-                f"ImageFile: {imageFile}, Expected Error:{errorCode}" )
+            self.log.stepStart(f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+            self.log.step(f'Expected Error code: {errorCode}, imageFile: {imageFile}')
 
             # Copy YAML to DUT
             self.utilities.sftpCopy(
@@ -82,7 +81,7 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
 
             result = self.utMenu.collect_results(output, True)
 
-            self.log.stepResult(result, f"Flash L3 Image {imageFile}")
+            self.log.stepResult(result, f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
 
             if not result:
                 overallResult = False
