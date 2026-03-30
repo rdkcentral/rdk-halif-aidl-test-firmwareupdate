@@ -73,7 +73,7 @@ export ENABLE_UT_INFO_LOGGING=1
 Output:
 
 * Binary: `build/bin/`
-* Tar: `vts-Flash.tar.gz`
+* Tar: `vts-flash.tar.gz`
 
 ---
 
@@ -82,7 +82,7 @@ Output:
 ### Copy to DUT
 
 ```bash
-scp vts-Flash.tar.gz root@<DUT>:/tmp/
+scp vts-flash.tar.gz root@<DUT>:/tmp/
 ```
 
 ### Extract
@@ -90,7 +90,7 @@ scp vts-Flash.tar.gz root@<DUT>:/tmp/
 ```bash
 ssh root@<DUT>
 mkdir /tmp/flash
-tar -zxf vts-Flash.tar.gz -C /tmp/flash
+tar -zxf vts-flash.tar.gz -C /tmp/flash
 cd /tmp/flash
 ```
 
