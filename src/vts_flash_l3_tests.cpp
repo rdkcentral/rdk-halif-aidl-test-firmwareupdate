@@ -136,34 +136,14 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_imageTypes)
 
     auto &test = testConfig.testConfigurations[0];
     sp<FlashListener> listener = new FlashListener();
-    bool ret = false;
 
     UT_LOG_DEBUG("Flashing image: %s", test.filename.c_str());
 
-    Status status = gFLASHHandle->flashImageFromFile(
-            test.filename,
-            listener,
-            &ret);
-
-    UT_ASSERT_TRUE(status.isOk());
-    UT_ASSERT_TRUE(ret);
-
-    if (test.expectedErrorCode != FlashImageResult::SUCCESS)
-    {
-        // skip progress wait
-        UT_ASSERT_EQUAL(listener->mFinalResult, test.expectedErrorCode);
-        return;
-    }
-
-    WAIT_FOR_COMPLETION(listener, testConfig.testMaxFlashwaitDurationMs);
-    UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::SUCCESS);
-
-    if (listener->mFinalResult == FlashImageResult::SUCCESS)
-    {
-        UT_ASSERT_FALSE(listener->mProgressSequence.empty());
-        UT_ASSERT_EQUAL(listener->mProgressSequence.front(), 0);
-        UT_ASSERT_EQUAL(listener->mProgressSequence.back(), 100);
-    }
+    FLASHIMAGEFROMFILE_SUCCESS(
+        gFLASHHandle,
+        test.filename,
+        listener,
+        testConfig.testMaxFlashwaitDurationMs);
 }
 /**
  * @brief Test successful execution of flashImageFromFile API with valid inputs
@@ -260,26 +240,21 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_validateAllErrorcodes)
     flashTestConfiguration_t testConfig;
 
     vts_flash_parse_config(VTS_FLASH_TEST_CONFIG_PATH,
-                        "Flash", "L3",
-                        "Test",
-                        testConfig);
+                           "Flash", "L3",
+                           "Test",
+                           testConfig);
 
     UT_ASSERT_FALSE(testConfig.testConfigurations.empty());
     auto &test = testConfig.testConfigurations[0];
-    sp<FlashListener> listener = new FlashListener();
-    bool ret = false;
-    Status status = gFLASHHandle->flashImageFromFile(
-            test.filename,
-            listener,
-            &ret);
 
-    UT_ASSERT_TRUE(status.isOk());
-    UT_ASSERT_TRUE(ret);
-    WAIT_FOR_COMPLETION(listener, testConfig.testMaxFlashwaitDurationMs);
-    UT_ASSERT_EQUAL(listener->mFinalResult,
-                    test.expectedErrorCode);
-    UT_ASSERT_NOT_EQUAL(listener->mFinalResult,
-                    FlashImageResult::SUCCESS);
+    sp<FlashListener> listener = new FlashListener();
+
+    FLASHIMAGEFROMFILE_VALIDATE_ERROR_RESULT(
+        gFLASHHandle,
+        test.filename,
+        listener,
+        test.expectedErrorCode,
+        testConfig.testMaxFlashwaitDurationMs);
 }
 /** @} */ // End of FLAH_HALTEST_L1
 /** @} */ // End of FLASH_HALTEST

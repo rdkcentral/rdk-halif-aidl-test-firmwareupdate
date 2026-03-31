@@ -147,8 +147,15 @@ using namespace com::rdk::hal::flash;
         } \
     } while (0)
 
+/* TODO: WAIT_FOR_COMPLETION
+ *       Switch fully to condition_variable when glib versions
+ *       are aligned across VTS, vDevice/vendor image, and AIDL builds
+ *       Current implementation uses condition_variable but may need
+ *       fallback depending on platform glib differences.
+ */
 #define WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs)                  \
     do {                                                                       \
+                                                                      \
         bool completed = (listener)->waitForCompletion(maxFlashwaitDurationMs);\
                                                                                \
         if (!completed) {                                                      \
@@ -158,6 +165,21 @@ using namespace com::rdk::hal::flash;
                                                                                \
         UT_ASSERT_TRUE((listener)->mCompleted);                                 \
     } while(0)
+
+#define FLASHIMAGEFROMFILE_VALIDATE_ERROR_RESULT(flashHandle, filename, listener, expectedError, waitMs) \
+    do { \
+        ::android::binder::Status status; \
+        bool _aidl_return = false; \
+        UT_ASSERT_NOT_EQUAL_FATAL(listener.get(), nullptr); \
+        UT_LOG_DEBUG("Calling flashImageFromFile filename[%s]", filename.c_str()); \
+        status = (flashHandle)->flashImageFromFile(filename, listener, &_aidl_return); \
+        UT_ASSERT_TRUE(status.isOk()); \
+        UT_ASSERT_EQUAL(status.exceptionCode(), Status::EX_NONE); \
+        UT_ASSERT_TRUE(_aidl_return); \
+        WAIT_FOR_COMPLETION(listener, waitMs); \
+        UT_ASSERT_EQUAL(listener->mFinalResult, expectedError); \
+        UT_ASSERT_NOT_EQUAL(listener->mFinalResult, FlashImageResult::SUCCESS); \
+    } while (0)
 
 /* =========================================================
  * TEST LISTENER 
