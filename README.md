@@ -25,7 +25,7 @@ This repository contains the Test Suites(`L1` , `L2` and `L3`) for Flash `HAL`.
 |SNo|Document Name|Document Description|Document Link|
 |---|-------------|--------------------|-------------|
 |1|`HAL` Specification Document|This document provides specific information on the APIs for which tests are written in this module|[HAL Interface](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/README.md)|
-|2|High Level Test Specification|High Level Test Specification Documentation for the `Flash` Hal|[Flash_High-Level_TestSpecification.md](doc/pages/flash_High-Level_TestSpecification.md)||
-|4|`L3` Low Level Test Specification|`L3` Low Level Test Specification for the `Flash` Hal|[Flash_L3_Low-Level_TestSpecification.md](doc/pages/flash_L3_Low-Level_TestSpecification.md)|
-|5|`L1` `L2` and `L3` Test procedure document|This document contains Build Instructions and `L1` `L2` and `L3` Test procedure for the `Flash` Hal|[vts_Flash_L1_L2_L3_TestProcedure.md](doc/pages/vts_flash_L1_L2_L3_TestProcedure.md)|
+|2|High Level Test Specification|High Level Test Specification Documentation for the `Flash` Hal|[Flash_High-Level_TestSpecification.md](docs/pages/flash_High-Level_TestSpecification.md)||
+|4|`L3` Low Level Test Specification|`L3` Low Level Test Specification for the `Flash` Hal|[Flash_L3_Low-Level_TestSpecification.md](docs/pages/flash_L3_Low-Level_TestSpecification.md)|
+|5|`L1` `L2` and `L3` Test procedure document|This document contains Build Instructions and `L1` `L2` and `L3` Test procedure for the `Flash` Hal|[vts_Flash_L1_L2_L3_TestProcedure.md](docs/pages/vts_flash_L1_L2_L3_TestProcedure.md)|
 
