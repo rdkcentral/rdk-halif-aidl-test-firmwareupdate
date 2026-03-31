@@ -60,13 +60,13 @@ The L3 Flash test suite performs:
 
 ### Pre-Conditions
 
-* Valid flash image must be available in `/assets/flashfiles/input`
+* Valid flash image must be available in `dut` and the path needs to be updated in test_configuration/vts_flash_image_config.yaml
 * Flash HAL service must be running
 * Listener interface must be registered
 
 ### Dependencies
 
-* Flash HAL Interface: `IFlash`
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * YAML Configuration (`vts_l3_flash.yaml`)
 * UT Framework
 
@@ -125,7 +125,7 @@ graph TD
 
 ### Dependencies
 
-* Flash HAL Interface: `IFlash`
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * Listener implementation
 
 ### User Interaction
@@ -173,13 +173,12 @@ graph TD
 | Priority      | High                                                                |
 
 ### Pre-Conditions
-
-* Negative test images must be available
+* Negative test images must be available in `dut` and the path needs to be updated in test_configuration/vts_flash_image_config.yaml
 * YAML updated dynamically by host test
 
 ### Dependencies
 
-* Flash HAL Interface: `IFlash`
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * Host-side script updates YAML
 * Error code mapping
 
@@ -220,7 +219,7 @@ graph TD
 
 ## References
 
-* Flash HAL Interface: `IFlash`
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * L3 Config: `vts_l3_flash.yaml`
 * Image Config: `vts_flash_image_config.yaml`
 
