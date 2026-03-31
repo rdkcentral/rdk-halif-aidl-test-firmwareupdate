@@ -60,7 +60,7 @@ The L3 Flash test suite performs:
 
 ### Pre-Conditions
 
-* Valid image file available must be available in `dut` and the path needs to be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
 * YAML updated dynamically by host test
 [test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
 * Flash HAL service must be running
@@ -122,7 +122,7 @@ graph TD
 
 ### Pre-Conditions
 
-* Valid image file available must be available in `dut` and the path needs to be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
 * YAML updated dynamically by host test
 [test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
 * Flash HAL service running
@@ -177,7 +177,7 @@ graph TD
 | Priority      | High                                                                |
 
 ### Pre-Conditions
-* Negative test images must be available in `dut` and the path needs to be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* All Error simulating images file must be present on the DUT, and its path must be updated in  [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
 * YAML updated dynamically by host test
 [test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
 ### Dependencies
