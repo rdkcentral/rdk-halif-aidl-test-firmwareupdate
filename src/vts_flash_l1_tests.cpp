@@ -153,7 +153,7 @@ public:
 
         WAIT_FOR_COMPLETION(listener, 5000);
 
-        UT_ASSERT_EQUAL(listener->finalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
+        UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
     }
 
     // 3. Non-existent file
@@ -169,7 +169,7 @@ public:
 
         WAIT_FOR_COMPLETION(listener, 5000);
 
-        UT_ASSERT_EQUAL(listener->finalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
+        UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
     }
 }
 
