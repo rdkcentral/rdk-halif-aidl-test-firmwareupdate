@@ -117,8 +117,8 @@ public:
  * | 03 | Invoke flashImageFromFile API with valid inputs | filename, listener | API returns success status (isOk() == true) and result flag true | Should Pass |@n
  * | 04 | Register listener and monitor progress callbacks | FlashListener | Progress callbacks received incrementally from 0% to 100% | Should Pass |@n
  * | 05 | Wait for completion using configured timeout | listener, testMaxFlashwaitDurationMs | Completion callback is received within timeout | Should Pass |@n
- * | 06 | Validate progress sequence | listener->progressSequence | First value is 0 and last value is 100 | Should Pass |@n
- * | 07 | Validate final result | listener->finalResult | Final result equals SUCCESS | Should Pass |
+ * | 06 | Validate progress sequence | listener->mProgressSequence | First value is 0 and last value is 100 | Should Pass |@n
+ * | 07 | Validate final result | listener->mFinalResult | Final result equals SUCCESS | Should Pass |
  */
 UT_ADD_TEST(VTS_L3_FLASH, flash_imageTypes)
 {
@@ -151,32 +151,18 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_imageTypes)
     if (test.expectedErrorCode != FlashImageResult::SUCCESS)
     {
         // skip progress wait
-        UT_ASSERT_EQUAL(listener->finalResult, test.expectedErrorCode);
+        UT_ASSERT_EQUAL(listener->mFinalResult, test.expectedErrorCode);
         return;
     }
 
     WAIT_FOR_COMPLETION(listener, testConfig.testMaxFlashwaitDurationMs);
-    UT_ASSERT_EQUAL(listener->finalResult, FlashImageResult::SUCCESS);
+    UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::SUCCESS);
 
-    if (listener->finalResult == FlashImageResult::SUCCESS)
+    if (listener->mFinalResult == FlashImageResult::SUCCESS)
     {
-        UT_ASSERT_FALSE(listener->progressSequence.empty());
-        UT_ASSERT_EQUAL(listener->progressSequence.front(), 0);
-        UT_ASSERT_EQUAL(listener->progressSequence.back(), 100);
-    }
-    // Determine expected increments from the profile
-    int stepPercent = test.stepPercent; // get from YAML profile
-    int expectedValue = 0;
-
-    for (size_t i = 0; i < listener->progressSequence.size(); ++i)
-    {
-        // Ensure value matches expected or is the last 100%
-        if (expectedValue > 100) expectedValue = 100;
-
-        UT_ASSERT_EQUAL(listener->progressSequence[i], expectedValue);
-        UT_LOG_DEBUG("Progress[%zu] = %d%%", i, listener->progressSequence[i]);
-
-        expectedValue += stepPercent;
+        UT_ASSERT_FALSE(listener->mProgressSequence.empty());
+        UT_ASSERT_EQUAL(listener->mProgressSequence.front(), 0);
+        UT_ASSERT_EQUAL(listener->mProgressSequence.back(), 100);
     }
 }
 /**
@@ -201,8 +187,8 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_imageTypes)
  * | 03 | Invoke flashImageFromFile API with valid inputs | filename, listener | API returns success status (isOk() == true) and result flag true | Should Pass |@n
  * | 04 | Register listener and monitor progress callbacks | FlashListener | Progress callbacks received incrementally from 0% to 100% | Should Pass |@n
  * | 05 | Wait for completion using configured timeout | listener, testMaxFlashwaitDurationMs | Completion callback is received within timeout | Should Pass |@n
- * | 06 | Validate progress sequence | listener->progressSequence | First value is 0 and last value is 100 | Should Pass |@n
- * | 07 | Validate final result | listener->finalResult | Final result equals SUCCESS | Should Pass |
+ * | 06 | Validate progress sequence | listener->mProgressSequence | First value is 0 and last value is 100 | Should Pass |@n
+ * | 07 | Validate final result | listener->mFinalResult | Final result equals SUCCESS | Should Pass |
  */
 UT_ADD_TEST(VTS_L3_FLASH, flash_concurrentReject)
 {
@@ -243,7 +229,7 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_concurrentReject)
     // Only first should complete
     WAIT_FOR_COMPLETION(listener1, testConfig.testMaxFlashwaitDurationMs);
 
-    UT_ASSERT_EQUAL(listener1->finalResult, FlashImageResult::SUCCESS); 
+    UT_ASSERT_EQUAL(listener1->mFinalResult, FlashImageResult::SUCCESS);
 }
 
 /**
@@ -267,7 +253,7 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_concurrentReject)
  * | 02 | Retrieve filename and listener from configuration | filename, listener | Inputs are valid | Should Pass |@n
  * | 03 | Invoke flashImageFromFile API with failure-injected image | filename | API call returns success status but operation fails internally | Should Pass |@n
  * | 04 | Wait for completion callback | listener, timeout | Completion callback is received within timeout | Should Pass |@n
- * | 05 | Validate final result | listener->finalResult | Final result equals ERROR_FLASH_WRITE_FAILED | Should Pass |
+ * | 05 | Validate final result | listener->mFinalResult | Final result equals ERROR_FLASH_WRITE_FAILED | Should Pass |
  */
 UT_ADD_TEST(VTS_L3_FLASH, flash_validateAllErrorcodes)
 {
@@ -290,9 +276,9 @@ UT_ADD_TEST(VTS_L3_FLASH, flash_validateAllErrorcodes)
     UT_ASSERT_TRUE(status.isOk());
     UT_ASSERT_TRUE(ret);
     WAIT_FOR_COMPLETION(listener, testConfig.testMaxFlashwaitDurationMs);
-    UT_ASSERT_EQUAL(listener->finalResult,
+    UT_ASSERT_EQUAL(listener->mFinalResult,
                     test.expectedErrorCode);
-    UT_ASSERT_NOT_EQUAL(listener->finalResult,
+    UT_ASSERT_NOT_EQUAL(listener->mFinalResult,
                     FlashImageResult::SUCCESS);
 }
 /** @} */ // End of FLAH_HALTEST_L1

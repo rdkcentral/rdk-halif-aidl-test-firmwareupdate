@@ -113,10 +113,10 @@ using namespace com::rdk::hal::flash;
         UT_ASSERT_EQUAL(status.exceptionCode(), Status::EX_NONE); \
         UT_ASSERT_TRUE(_aidl_return); \
         WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs); \
-        UT_ASSERT_EQUAL(listener->result, FlashImageResult::SUCCESS); \
-        UT_ASSERT_TRUE(!listener->progressValues.empty()); \
-        UT_ASSERT_TRUE(listener->progressValues.front() == 0); \
-        UT_ASSERT_TRUE(listener->progressValues.back() == 100); \
+        UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::SUCCESS); \
+        UT_ASSERT_TRUE(!listener->mProgressSequence.empty()); \
+        UT_ASSERT_TRUE(listener->mProgressSequence.front() == 0); \
+        UT_ASSERT_TRUE(listener->mProgressSequence.back() == 100); \
     } while (0)
 
 /* =========================================================
@@ -156,7 +156,7 @@ using namespace com::rdk::hal::flash;
                          (maxFlashwaitDurationMs));                            \
         }                                                                      \
                                                                                \
-        UT_ASSERT_TRUE((listener)->completed);                                 \
+        UT_ASSERT_TRUE((listener)->mCompleted);                                 \
     } while(0)
 
 /* =========================================================
@@ -168,9 +168,9 @@ public:
     FlashListener() = default;
     virtual ~FlashListener() = default;
 
-    std::vector<int> progressSequence;
-    FlashImageResult finalResult = FlashImageResult::ERROR_GENERAL;
-    bool completed = false;
+    std::vector<int> mProgressSequence;
+    FlashImageResult mFinalResult = FlashImageResult::ERROR_GENERAL;
+    bool mCompleted = false;
 
     ::android::binder::Status onProgress(int32_t percentComplete) override;
     ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
