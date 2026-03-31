@@ -60,16 +60,16 @@ The L3 Flash test suite performs:
 
 ### Pre-Conditions
 
-* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
 * YAML updated dynamically by host test
-[test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
+[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 * Flash HAL service must be running
 * Listener interface must be registered
 
 ### Dependencies
 
 * Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
-* YAML Configuration: [test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
+* YAML Configuration: [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 * UT Framework
 
 ### User Interaction
@@ -122,9 +122,9 @@ graph TD
 
 ### Pre-Conditions
 
-* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
 * YAML updated dynamically by host test
-[test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
+[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 * Flash HAL service running
 
 ### Dependencies
@@ -177,9 +177,9 @@ graph TD
 | Priority      | High                                                                |
 
 ### Pre-Conditions
-* All Error simulating images file must be present on the DUT, and its path must be updated in  [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* All Error simulating images file must be present on the DUT, and its path must be updated in  [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
 * YAML updated dynamically by host test
-[test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
+[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 ### Dependencies
 
 * Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
@@ -224,7 +224,7 @@ graph TD
 ## References
 
 * Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
-* L3 Config: [test_configuration/vts_l3_flash.yaml](test_configuration/vts_l3_flash.yaml)
-* Image Config: [test_configuration/vts_flash_image_config.yaml](test_configuration/vts_flash_image_config.yaml)
+* L3 Config: [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
+* Image Config: [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
 
 ---
