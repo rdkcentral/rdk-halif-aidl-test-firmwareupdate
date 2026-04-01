@@ -1,0 +1,36 @@
+#** *****************************************************************************
+# *
+# * If not stated otherwise in this file or this component's LICENSE file the
+# * following copyright and licenses apply:
+# *
+# * Copyright 2025 RDK Management
+# *
+# * Licensed under the Apache License, Version 2.0 (the "License");
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# *
+# * http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+# *
+# * ******************************************************************************
+
+Flash:
+  image_types:
+    PCI: ""                                     # TODO: update with path to PCI flash image
+    DRI: ""                                     # TODO: update with path to DRI flash image
+    SPLASH: ""                                  # TODO: update with path to SPLASH flash image
+    BOOTLOADER: ""                              # TODO: update with path to BOOTLOADER flash image
+  negative_images:
+    ERROR_IMAGE_INVALID_TYPE: ""                # TODO: update with path to invalid type/unsupported type image
+    ERROR_IMAGE_INVALID_SIZE: ""                # TODO: update with path to invalid size image
+    ERROR_IMAGE_INVALID_SIGNATURE: ""           # TODO: update with path to invalid signature image
+    ERROR_IMAGE_INVALID_PRODUCT: ""             # TODO: update with path to invalid product image
+    ERROR_FLASH_VERIFY_FAILED: ""               # TODO: update with path to verify failed image
+    ERROR_FLASH_VERIFY_SIGNATURE_FAILED: ""     # TODO: update with path to verify signature image
+
