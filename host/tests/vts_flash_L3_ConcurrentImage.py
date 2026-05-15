@@ -28,11 +28,11 @@ sys.path.append(os.path.join(dir_path, "../"))
 
 from raft.framework.plugins.ut_raft.configRead import ConfigRead
 from raft.framework.core.logModule import logModule
-from host.tests.vts_flash_helper import flashHelperClass
+from vts_flash_helper import flashHelperClass
 
 FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
 
-class VTS_FLASH_L3_TestAllImages(flashHelperClass):
+class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
     """
     Validate all supported Flash image types
     """

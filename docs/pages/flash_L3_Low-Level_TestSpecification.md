@@ -68,7 +68,7 @@ The L3 Flash test suite performs:
 
 ### Dependencies
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * YAML Configuration: [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 * UT Framework
 
@@ -129,7 +129,7 @@ graph TD
 
 ### Dependencies
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * Listener implementation
 
 ### User Interaction
@@ -182,7 +182,7 @@ graph TD
 [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 ### Dependencies
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * Host-side script updates YAML
 * Error code mapping
 
@@ -223,7 +223,7 @@ graph TD
 
 ## References
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 * L3 Config: [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
 * Image Config: [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
 

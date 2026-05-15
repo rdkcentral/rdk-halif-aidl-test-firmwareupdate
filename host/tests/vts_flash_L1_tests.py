@@ -31,7 +31,7 @@ from raft.framework.core.logModule import logModule
 from raft.framework.plugins.ut_raft import utHelperClass
 from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClass
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
-from host.tests.vts_flash_helper import flashHelperClass
+from vts_flash_helper import flashHelperClass
 
 FLASH_L1_TEST_SUITE_NAME = "VTS_L1_FLASH"
 
