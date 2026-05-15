@@ -87,7 +87,7 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
         return finalresult
 
 if __name__ == '__main__':
-    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"
+    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog = logModule(summaryLogName, level=logModule.INFO)
     test = VTS_FLASH_L1_Tests(summaryLog)
     test.run(False)

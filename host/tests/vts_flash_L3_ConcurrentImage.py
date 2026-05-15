@@ -95,7 +95,7 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
         return result
 
 if __name__ == '__main__':
-    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"
+    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog  = logModule(summaryLogName, level=logModule.INFO)
-    test = VTS_FLASH_L3_TestAllImages(summaryLog )
+    test = VTS_FLASH_L3_ConcurrentImage(summaryLog)
     test.run(False)
