@@ -34,7 +34,11 @@ FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
 
 class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
     """
-    Validate all supported Flash image types
+    Validate that concurrent Flash image requests are rejected.
+
+    Selects the first supported image type from the HFP profile,
+    initiates a flash operation, and verifies that any simultaneous
+    flash request is correctly refused by the HAL.
     """
     def __init__(self, log:logModule=None):
         """
@@ -46,10 +50,15 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
 
     def testFunction(self):
         """
-        Runs L3 Flash Test for all supported image types.
+        Runs the L3 Flash concurrent rejection test.
+
+        Loads the HFP profile, selects the first supported image type,
+        configures the test for a SUCCESS outcome, copies the config to
+        the DUT, and executes the flash_concurrentReject test case via
+        the UT menu.
 
         Returns:
-            bool: True if all tests pass, False otherwise.
+            bool: True if the concurrent rejection test passes, False otherwise.
         """
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         result = False
