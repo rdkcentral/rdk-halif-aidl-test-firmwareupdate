@@ -31,7 +31,7 @@ from raft.framework.core.logModule import logModule
 from raft.framework.plugins.ut_raft import utHelperClass
 from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClass
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
-from host.tests.vts_flash_helper import flashHelperClass
+from vts_flash_helper import flashHelperClass
 
 FLASH_L1_TEST_SUITE_NAME = "VTS_L1_FLASH"
 
@@ -87,7 +87,7 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
         return finalresult
 
 if __name__ == '__main__':
-    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"
+    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog = logModule(summaryLogName, level=logModule.INFO)
     test = VTS_FLASH_L1_Tests(summaryLog)
     test.run(False)

@@ -52,7 +52,7 @@ cd rdk-halif-aidl-test-flash
 
 ```bash
 export UT_CORE_VERSION=5.0.0
-export RDK_HALIF_AIDL_VERSION=0.14.0
+export RDK_HALIF_AIDL_VERSION=0.15.0
 export VCOMPONENT_FLASH_VERSION=0.1.0
 export AIDL_BIN=/path/to/aidl
 export LINUX_BINDER_OUT_DIR=/path/to/local
@@ -63,6 +63,8 @@ Enable logs (optional):
 ```bash
 export ENABLE_UT_INFO_LOGGING=1
 ```
+#### Note
+This build has been compiled and reviewed against AIDL version 0.15.0.
 
 ### Build
 

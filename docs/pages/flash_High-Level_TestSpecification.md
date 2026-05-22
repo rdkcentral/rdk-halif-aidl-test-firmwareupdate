@@ -39,7 +39,7 @@ The Flash HAL provides a standardized interface for flashing firmware image file
 The design defines the functional scope, architecture, operational flow, constraints, and error-handling behavior of the Flash HAL. Detailed test procedures are covered separately in the L2 and L3 test specifications..
 
 ## Reference
-- Flash Interface Definitions - [Flash HAL](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.14.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+- Flash Interface Definitions - [Flash HAL](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
 
 
 ## Module Description
