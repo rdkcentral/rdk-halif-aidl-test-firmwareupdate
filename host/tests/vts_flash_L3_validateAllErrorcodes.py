@@ -28,13 +28,17 @@ sys.path.append(os.path.join(dir_path, "../"))
 
 from raft.framework.plugins.ut_raft.configRead import ConfigRead
 from raft.framework.core.logModule import logModule
-from host.tests.vts_flash_helper import flashHelperClass
+from vts_flash_helper import flashHelperClass
 
 FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
 
 class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
     """
-    Validate all supported Flash image types
+    Validates that all Flash error codes are correctly reported by the HAL.
+
+    Iterates over every negative test image in the profile, triggers a flash
+    operation expected to fail with a specific error code, and verifies that
+    the HAL returns the correct error for each case.
     """
     def __init__(self, log:logModule=None):
         """
@@ -47,10 +51,14 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
 
     def testFunction(self):
         """
-        Runs L3 Flash Test for all supported image types.
+        Runs the L3 Flash error-code validation test for all negative image types.
+
+        Iterates over the negative image map, configures each image with its
+        expected error code, copies the config to the DUT, and executes the
+        flash_validateAllErrorcodes test case via the UT menu for each entry.
 
         Returns:
-            bool: True if all tests pass, False otherwise.
+            bool: True if all error-code cases pass, False if any case fails.
         """
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         result = False
@@ -89,7 +97,7 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
 
 
 if __name__ == '__main__':
-    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summery"
+    summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog  = logModule(summaryLogName, level=logModule.INFO)
-    test = VTS_FLASH_L3_ValidateAllErrorCodes(summaryLog )
+    test = VTS_FLASH_L3_ValidateAllErrorCodes(summaryLog)
     test.run(False)
