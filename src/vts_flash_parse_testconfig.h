@@ -102,7 +102,7 @@ typedef struct
     int32_t testMaxFlashwaitDurationMs{30000};
     int32_t testMaxProgressWaitDurationMs{0};
 } flashTestConfiguration_t;
-#define VTS_FLASH_TEST_CONFIG_PATH "./test_configuration/vts_l3_flash.yaml"
+#define VTS_FLASH_TEST_CONFIG_PATH "./flash_test_configuration/vts_l3_flash.yaml"
 
 UT_status_t vts_flash_parse_config(const char *configurationFile, const char *module, const char *testGroup,
                                        const char *testName, flashTestConfiguration_t &outConfig);
