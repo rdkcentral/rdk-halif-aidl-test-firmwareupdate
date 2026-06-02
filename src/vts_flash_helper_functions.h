@@ -95,8 +95,6 @@ using android::binder::Status;
 extern const ut_control_keyStringMapping_t bool_mapTable_flash[];
 extern const ut_control_keyStringMapping_t statusFlashException_mapTable[];
 
-std::string vecIntToString(std::vector<int32_t>& addrs);
-std::string vecByteToHexString(const std::vector<uint8_t>& data);
 
 #endif //__VTS_FLASH_HELPER_H__
 

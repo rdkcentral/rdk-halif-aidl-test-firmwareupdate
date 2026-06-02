@@ -88,29 +88,6 @@ const ut_control_keyStringMapping_t statusFlashException_mapTable[] =
     {"EX_TRANSACTION_FAILED",    (int32_t) Status::EX_TRANSACTION_FAILED},
     {NULL, -1}
 };
-std::string vecIntToString(std::vector<int32_t>& addrs)
-{
-    std::string s;
-    for (size_t i = 0; i < addrs.size(); ++i)
-    {
-        s += std::to_string(addrs[i]);
-        if (i != addrs.size() - 1) s += ", ";
-    }
-    return s;
-}
-
-std::string vecByteToHexString(const std::vector<uint8_t>& data)
-{
-    std::ostringstream oss;
-    oss << std::uppercase << std::hex;  // uppercase hex letters
-    for (size_t i = 0; i < data.size(); ++i)
-    {
-        oss << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
-        if (i + 1 < data.size())
-            oss << ",";
-    }
-    return oss.str();
-}
 
 /** @} */ // End of FLASHHALTEST_HELPER
 /** @} */ // End of FLASH_HALTEST
