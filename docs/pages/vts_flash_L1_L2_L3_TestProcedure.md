@@ -165,7 +165,7 @@ python <vts_flash_L3_xxx>.py \
 ---
 
 ### Flash Image Configuration File
-[test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
+[flash_test_configuration/vts_flash_image_config.yaml](../../flash_test_configuration/vts_flash_image_config.yaml)
 
 ```yaml
 Flash:
@@ -250,7 +250,7 @@ For real hardware testing:
 
 ### Flash Test Configuration File
 
-[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
+[flash_test_configuration/vts_l3_flash.yaml](../../flash_test_configuration/vts_l3_flash.yaml)
 
 Note:
 - This config File will be updated by running L3 python test cases
