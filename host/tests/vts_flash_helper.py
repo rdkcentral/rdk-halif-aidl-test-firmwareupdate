@@ -38,70 +38,91 @@ from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
 
 FLASH_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_flash_testMenuConfiguration.yaml")
 FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(os.path.join(dir_path, "../configs"), "vts_flash_testcase_configuration.yaml")
-FLASH_IMAGES_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_flash_image_config.yaml")
-FLASH_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_l3_flash.yaml")
+FLASH_PROFILE_FILE_NAME = "profiles/hfp-flash-vcomponent.yaml"
+FLASH_IMAGES_CONFIG_FILE = "flash_test_configuration/vts_flash_image_config.yaml"
+FLASH_L3_TEST_CONFIG_FILE = "flash_test_configuration/vts_l3_flash.yaml"
 
 class flashHelperClass(utHelperClass):
+    # Set to an absolute path by the non_av_l3 runner to use the common
+    # vts_l3_test_setup.yaml menu.  None (default) means use the file bundled
+    # with this component, so standalone flash runs are unaffected.
+    _menuConfigFile = None
 
-    def __init__(self, testName:str, qcId:str, log:logModule=None ):
+    def __init__(self, testName: str, qcId: str, log: logModule = None):
         """
-        Initializes the test class
+        Initializes the Flash HAL test helper class.
+        Args:
+            testName (str): Name of the test case.
+            qcId (str): QC identifier for the test.
+            log (logModule, optional): Logger instance; created if not provided.
         """
-        self.moduleName = "Flash"
         self.profile_moduleName = "flash"
         super().__init__(testName, qcId, log)
 
-        self.log = log
         if log is None:
-            self.log = logModule(self.__class__.__name__)
-            self.log.setLevel(self.log.INFO)
+            log = logModule(self.__class__.__name__)
+            log.setLevel(log.INFO)
+        self.log = log
 
-        # Parse device configuration
+        # Device configuration
         self.deviceTestSetup = self.cpe.get("test")
-        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName)
-        self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
-        self.moduleHFPFile = self.moduleHFPFile.replace("\\", "/")
-
-        self.l3TestConfigFolder = os.path.join(self.targetWorkspace, "test_configuration")
-        self.l3TestConfigFolder = self.l3TestConfigFolder.replace("\\", "/")
-
         self.waitTime = self.cpe.get("wait_time")
         self.device_type = self.cpe.get("device_type")
         self.platform = self.cpe.get("platform")
 
-        # Load test menu and test case configuration files
-        self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
-        self.testMenuConfiguration = ConfigRead(FLASH_TEST_MENU_CONFIGURATION_FILE, self.moduleName)
-        self.testCaseConfiguration = ConfigRead(FLASH_TESTCASES_CONFIGURATION_FILE, self.moduleName)
-        self.testImageList = ConfigRead(FLASH_IMAGES_CONFIG_FILE, self.moduleName)
-        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute
+        # Determine context: unified non-AV runner vs standalone component run
+        _run_from_unified = (self.__class__._menuConfigFile is not None)
 
-        # Establish HAL session
-        self.hal_session = self.dut.getConsoleSession("ssh_hal_test")
+        if _run_from_unified:
+            self.moduleName     = self.__class__._moduleName
+            profilePath         = self.__class__._profilePath
+            artifactpath        = self.__class__._dirPath
+            _menu_cfg           = self.__class__._menuConfigFile
+            self.moduleHFPFile  = os.path.join(str(profilePath), FLASH_PROFILE_FILE_NAME).replace("\\", "/")
+            self.imageConfigFile = os.path.join(str(profilePath), FLASH_IMAGES_CONFIG_FILE).replace("\\", "/")
+        else:
+            self.moduleName     = "Flash"
+            artifactpath        = dir_path
+            _menu_cfg           = FLASH_TEST_MENU_CONFIGURATION_FILE
+            self.moduleHFPFile  = os.path.join(dir_path, self.deviceTestSetup.get("profile")).replace("\\", "/")
+            self.imageConfigFile = os.path.join(dir_path, "../../", FLASH_IMAGES_CONFIG_FILE)
+
+        self.targetWorkspace  = os.path.join(self.cpe.get("target_directory"), self.moduleName)
+        self.l3TestConfigFile = os.path.join(dir_path, "../../", FLASH_L3_TEST_CONFIG_FILE)
+
+        # Load configurations
+        self.testMenuConfiguration = ConfigRead(_menu_cfg, self.moduleName)
+        self.testCaseConfiguration = None if _run_from_unified else ConfigRead(FLASH_TESTCASES_CONFIGURATION_FILE, self.moduleName)
+        self.testImageList         = ConfigRead(self.imageConfigFile, "Flash")
+
+        # Target config folder path
+        _cfg_base = os.path.join(self.targetWorkspace, "bin") if _run_from_unified else self.targetWorkspace
+        self.l3TestConfigFolder = os.path.join(_cfg_base, "flash_test_configuration").replace("\\", "/")
+
+        # Establish HAL sessions
+        self.hal_session   = self.dut.getConsoleSession("ssh_hal_test_0")
         self.hal_session_1 = self.dut.getConsoleSession("ssh_hal_test_1")
 
-        # Initialize UT menu navigator and utilities
-        self.utMenu = UTSuiteNavigatorClass(self.testMenuConfiguration, None, self.hal_session)
-        self.utilities = utBaseUtils()
-
-        # Create user response Class
+        # Initialize UT menu navigator, utilities and user response
+        self.utMenu          = UTSuiteNavigatorClass(self.testMenuConfiguration, None, self.hal_session)
+        self.utilities       = utBaseUtils()
         self.testUserResponse = utUserResponse()
 
         # Copy required artifacts to target device
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         for artifact in self.testMenuConfiguration.test.artifacts:
-            filesPath = os.path.join(dir_path, artifact)
+            filesPath = os.path.join(artifactpath, artifact)
             self.utilities.sftpCopy(self.hal_session, filesPath, self.targetWorkspace)
-
             if tarfile.is_tarfile(filesPath):
-                self.utilities.change_directory(self.hal_session, self.targetWorkspace)
-                target_tarfile = os.path.join(self.targetWorkspace, os.path.basename(artifact))
-                target_tarfile = target_tarfile.replace("\\", "/")
+                target_tarfile = os.path.join(self.targetWorkspace, os.path.basename(artifact)).replace("\\", "/")
                 self.utilities.untar(self.hal_session, target_tarfile, self.targetWorkspace)
 
         self.utilities.change_directory(self.hal_session_1, self.targetWorkspace)
-        self.hal_session_1.write(f"./{self.cpe.get('flash_process_name')} &")
+        if _run_from_unified:
+            self.targetWorkspace = os.path.join(self.targetWorkspace, "bin").replace("\\", "/")
+            self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         time.sleep(2)
+
 
     def runTest(self, testSuite, test_case:str=None):
         """
