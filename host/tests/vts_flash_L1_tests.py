@@ -58,6 +58,7 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
             bool: Final result of the test.
         """
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
+        testCaseConfiguration = ConfigRead(self.paths["testCasesConfigFile"], self.moduleName)
 
         self.utMenu.start()
 

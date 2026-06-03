@@ -73,7 +73,7 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
             # Copy YAML to DUT
             self.utilities.sftpCopy(
                 self.hal_session,
-                self.l3TestConfigFile,
+                self.paths["l3TestConfigFile"],
                 self.l3TestConfigFolder
             )
 

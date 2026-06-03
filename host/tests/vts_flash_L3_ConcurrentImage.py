@@ -63,11 +63,11 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         result = False
 
-        profileConfiguration = ConfigRead(self.moduleHFPFile, self.profile_moduleName)
+        profileConfiguration = ConfigRead(self.paths["moduleHFPFile"], self.profile_moduleName)
 
         if profileConfiguration is None:
             raise ValueError("Failed to load HFP profile file: "
-                            f"{self.moduleHFPFile}")
+                            f"{self.paths['moduleHFPFile']}")
 
         # Validate supportedImages exists
         if not hasattr(profileConfiguration, "supportedImages"):
@@ -86,7 +86,7 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
         # Copy YAML to DUT
         self.utilities.sftpCopy(
             self.hal_session,
-            self.l3TestConfigFile,
+            self.paths["l3TestConfigFile"],
             self.l3TestConfigFolder
         )
 

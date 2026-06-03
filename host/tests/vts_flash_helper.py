@@ -36,10 +36,13 @@ from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClas
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
 from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
 
+CONFIG_DIR = os.path.join(dir_path, "../configs")
+TEST_CONFIG_DIR = os.path.join(dir_path, "../../test_configuration")
+
 FLASH_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_flash_testMenuConfiguration.yaml")
-FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(os.path.join(dir_path, "../configs"), "vts_flash_testcase_configuration.yaml")
-FLASH_IMAGES_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_flash_image_config.yaml")
-FLASH_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_l3_flash.yaml")
+FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(CONFIG_DIR, "vts_flash_testcase_configuration.yaml")
+FLASH_IMAGES_CONFIG_FILE = os.path.join(TEST_CONFIG_DIR, "vts_flash_image_config.yaml")
+FLASH_L3_TEST_CONFIG_FILE = os.path.join(TEST_CONFIG_DIR, "vts_l3_flash.yaml")
 
 class flashHelperClass(utHelperClass):
 
@@ -71,29 +74,38 @@ class flashHelperClass(utHelperClass):
         # Resolve all config paths based on run mode
         if not isUnifiedTest:
             self.log.info(f"Initialized flashHelperClass for module: {self.moduleName}")
-            self.testMenuConfigFile = FLASH_TEST_MENU_CONFIGURATION_FILE
-            self.testCasesConfigFile = FLASH_TESTCASES_CONFIGURATION_FILE
-            self.imagesConfigFile = FLASH_IMAGES_CONFIG_FILE
-            self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
-            self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
+            self.paths = {
+                "testMenuConfigFile": FLASH_TEST_MENU_CONFIGURATION_FILE,
+                 "testCasesConfigFile": FLASH_TESTCASES_CONFIGURATION_FILE,
+                 "imagesConfigFile": FLASH_IMAGES_CONFIG_FILE,
+                 "l3TestConfigFile": FLASH_L3_TEST_CONFIG_FILE,
+                 "moduleHFPFile": os.path.join(dir_path, self.deviceTestSetup.get("profile"))
+            }
             artifactBaseDir = dir_path
             targetCfgBase = self.targetWorkspace
-            self.testCaseConfiguration = ConfigRead(self.testCasesConfigFile, self.moduleName)
-
         else:
-            self.testMenuConfigFile = os.path.join(unified_root, "host/tests/TestCases/vts_l3_test_setup.yaml")
-            self.testCasesConfigFile = os.path.join(component_root, "configs/vts_flash_testcase_configuration.yaml")
-            self.imagesConfigFile = os.path.join(component_root, "test_configuration/vts_flash_image_config.yaml")
-            self.l3TestConfigFile = os.path.join(component_root, "test_configuration/vts_l3_flash.yaml")
-            self.moduleHFPFile = os.path.join(component_root, "profiles/hfp-flash-vcomponent.yaml")
+            self.paths = {
+                "testMenuConfigFile": os.path.join(
+                    unified_root, "host/tests/TestCases/vts_l3_test_setup.yaml"
+                ),
+                "testCasesConfigFile": os.path.join(
+                     component_root, "configs/vts_flash_testcase_configuration.yaml"
+                ),
+                "imagesConfigFile": os.path.join(
+                     component_root, "flash_test_configuration/vts_flash_image_config.yaml"
+                ),
+                "l3TestConfigFile": os.path.join(
+                    component_root, "flash_test_configuration/vts_l3_flash.yaml"
+                ),
+                "moduleHFPFile": os.path.join(
+                    component_root, "profiles/hfp-flash-vcomponent.yaml"
+                )
+            }
             artifactBaseDir = os.path.join(component_root, "host")
             targetCfgBase = os.path.join(self.targetWorkspace, "bin").replace("\\", "/")
 
-        self.moduleHFPFile = os.path.normpath(self.moduleHFPFile).replace("\\", "/")
-        self.testMenuConfigFile = os.path.normpath(self.testMenuConfigFile)
-        self.testCasesConfigFile = os.path.normpath(self.testCasesConfigFile)
-        self.imagesConfigFile = os.path.normpath(self.imagesConfigFile)
-        self.l3TestConfigFile = os.path.normpath(self.l3TestConfigFile)
+        for attr, path in self.paths.items():
+            setattr (self, attr, os.path.normpath(path).replace("\\", "/"))
 
         profileOnTarget = os.path.join(
             targetCfgBase,
@@ -101,11 +113,11 @@ class flashHelperClass(utHelperClass):
             os.path.basename(self.moduleHFPFile)
         ).replace("\\", "/")
 
-        self.l3TestConfigFolder = os.path.join(targetCfgBase, "test_configuration").replace("\\", "/")
+        self.l3TestConfigFolder = os.path.join(targetCfgBase, "flash_test_configuration").replace("\\", "/")
 
         # Load test menu and test case configuration files
-        self.testMenuConfiguration = ConfigRead(self.testMenuConfigFile, self.moduleName)
-        self.testImageList = ConfigRead(self.imagesConfigFile, "Flash")
+        self.testMenuConfiguration = ConfigRead(self.paths["testMenuConfigFile"], self.moduleName)
+        self.testImageList = ConfigRead(self.paths["imagesConfigFile"], "Flash")
         self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute + f" -p {profileOnTarget}"
 
         # Establish HAL session
