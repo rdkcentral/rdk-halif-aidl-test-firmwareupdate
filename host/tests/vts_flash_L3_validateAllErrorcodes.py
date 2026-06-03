@@ -40,14 +40,14 @@ class VTS_FLASH_L3_ValidateAllErrorCodes(flashHelperClass):
     operation expected to fail with a specific error code, and verifies that
     the HAL returns the correct error for each case.
     """
-    def __init__(self, log:logModule=None):
+    def __init__(self, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
         self.testName = "flash_validateAllErrorcodes"
         qcId = "1"
         
-        super().__init__(self.testName, qcId, log)
+        super().__init__(self.testName, qcId, log, moduleName)
 
     def testFunction(self):
         """

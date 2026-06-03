@@ -43,11 +43,12 @@ FLASH_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_conf
 
 class flashHelperClass(utHelperClass):
 
-    def __init__(self, testName:str, qcId:str, log:logModule=None ):
+    def __init__(self, testName:str, qcId:str, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
-        self.moduleName = "Flash"
+        self.moduleName = "Flash" if moduleName is None else moduleName
+        isUnifiedTest = False if moduleName is None else True
         self.profile_moduleName = "flash"
         super().__init__(testName, qcId, log)
 
@@ -56,28 +57,59 @@ class flashHelperClass(utHelperClass):
             self.log = logModule(self.__class__.__name__)
             self.log.setLevel(self.log.INFO)
 
-        # Parse device configuration
+        # Parse device configuration first (used by path selection below)
         self.deviceTestSetup = self.cpe.get("test")
-        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName)
-        self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
-        self.moduleHFPFile = self.moduleHFPFile.replace("\\", "/")
-
-        self.l3TestConfigFolder = os.path.join(self.targetWorkspace, "test_configuration")
-        self.l3TestConfigFolder = self.l3TestConfigFolder.replace("\\", "/")
-
         self.waitTime = self.cpe.get("wait_time")
         self.device_type = self.cpe.get("device_type")
         self.platform = self.cpe.get("platform")
+        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName)
+
+        # Resolve local component and unified repo roots
+        component_root = os.path.normpath(os.path.join(dir_path, "../.."))
+        unified_root = os.path.normpath(os.path.join(dir_path, "../../../.."))
+
+        # Resolve all config paths based on run mode
+        if not isUnifiedTest:
+            self.log.info(f"Initialized flashHelperClass for module: {self.moduleName}")
+            self.testMenuConfigFile = FLASH_TEST_MENU_CONFIGURATION_FILE
+            self.testCasesConfigFile = FLASH_TESTCASES_CONFIGURATION_FILE
+            self.imagesConfigFile = FLASH_IMAGES_CONFIG_FILE
+            self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
+            self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
+            artifactBaseDir = dir_path
+            targetCfgBase = self.targetWorkspace
+            self.testCaseConfiguration = ConfigRead(self.testCasesConfigFile, self.moduleName)
+
+        else:
+            self.testMenuConfigFile = os.path.join(unified_root, "host/tests/TestCases/vts_l3_test_setup.yaml")
+            self.testCasesConfigFile = os.path.join(component_root, "configs/vts_flash_testcase_configuration.yaml")
+            self.imagesConfigFile = os.path.join(component_root, "test_configuration/vts_flash_image_config.yaml")
+            self.l3TestConfigFile = os.path.join(component_root, "test_configuration/vts_l3_flash.yaml")
+            self.moduleHFPFile = os.path.join(component_root, "profiles/hfp-flash-vcomponent.yaml")
+            artifactBaseDir = os.path.join(component_root, "host")
+            targetCfgBase = os.path.join(self.targetWorkspace, "bin").replace("\\", "/")
+
+        self.moduleHFPFile = os.path.normpath(self.moduleHFPFile).replace("\\", "/")
+        self.testMenuConfigFile = os.path.normpath(self.testMenuConfigFile)
+        self.testCasesConfigFile = os.path.normpath(self.testCasesConfigFile)
+        self.imagesConfigFile = os.path.normpath(self.imagesConfigFile)
+        self.l3TestConfigFile = os.path.normpath(self.l3TestConfigFile)
+
+        profileOnTarget = os.path.join(
+            targetCfgBase,
+            "profiles",
+            os.path.basename(self.moduleHFPFile)
+        ).replace("\\", "/")
+
+        self.l3TestConfigFolder = os.path.join(targetCfgBase, "test_configuration").replace("\\", "/")
 
         # Load test menu and test case configuration files
-        self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
-        self.testMenuConfiguration = ConfigRead(FLASH_TEST_MENU_CONFIGURATION_FILE, self.moduleName)
-        self.testCaseConfiguration = ConfigRead(FLASH_TESTCASES_CONFIGURATION_FILE, self.moduleName)
-        self.testImageList = ConfigRead(FLASH_IMAGES_CONFIG_FILE, self.moduleName)
-        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute
+        self.testMenuConfiguration = ConfigRead(self.testMenuConfigFile, self.moduleName)
+        self.testImageList = ConfigRead(self.imagesConfigFile, "Flash")
+        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute + f" -p {profileOnTarget}"
 
         # Establish HAL session
-        self.hal_session = self.dut.getConsoleSession("ssh_hal_test")
+        self.hal_session = self.dut.getConsoleSession("ssh_hal_test_0")
         self.hal_session_1 = self.dut.getConsoleSession("ssh_hal_test_1")
 
         # Initialize UT menu navigator and utilities
@@ -90,7 +122,7 @@ class flashHelperClass(utHelperClass):
         # Copy required artifacts to target device
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         for artifact in self.testMenuConfiguration.test.artifacts:
-            filesPath = os.path.join(dir_path, artifact)
+            filesPath = os.path.normpath(os.path.join(artifactBaseDir, artifact))
             self.utilities.sftpCopy(self.hal_session, filesPath, self.targetWorkspace)
 
             if tarfile.is_tarfile(filesPath):
@@ -99,8 +131,9 @@ class flashHelperClass(utHelperClass):
                 target_tarfile = target_tarfile.replace("\\", "/")
                 self.utilities.untar(self.hal_session, target_tarfile, self.targetWorkspace)
 
+        self.targetWorkspace = targetCfgBase
+        self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         self.utilities.change_directory(self.hal_session_1, self.targetWorkspace)
-        self.hal_session_1.write(f"./{self.cpe.get('flash_process_name')} &")
         time.sleep(2)
 
     def runTest(self, testSuite, test_case:str=None):

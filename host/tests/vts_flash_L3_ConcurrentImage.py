@@ -40,13 +40,13 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
     initiates a flash operation, and verifies that any simultaneous
     flash request is correctly refused by the HAL.
     """
-    def __init__(self, log:logModule=None):
+    def __init__(self, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
         self.testName = "flash_concurrentReject"
         qcId = "1"
-        super().__init__(self.testName, qcId, log)
+        super().__init__(self.testName, qcId, log, moduleName)
 
     def testFunction(self):
         """
