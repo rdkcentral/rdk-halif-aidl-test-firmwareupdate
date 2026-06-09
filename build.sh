@@ -180,34 +180,6 @@ build_ut_core()
 }
 
 ###############################################################################
-# Function to Build vcomponent services
-###############################################################################
-build_vcomponent_services()
-{
-    if [ ! -d ${VCOMPONENT_DIR} ]; then
-        git clone git@github.com:rdkcentral/rdk-aidl-vcomponent-flash.git ${VCOMPONENT_DIR}
-        if [ $? -ne 0 ]; then
-            echo "Failed to clone the vcomp repository. Exiting."
-            exit 1
-        fi
-    fi
-
-    pushd ${VCOMPONENT_DIR}
-
-    git checkout ${VCOMPONENT_FLASH_VERSION}
-
-    make -j"$(nproc)" -C "${TOP}/vcomponent" BUILD_DIR="${TOP_BUILD_DIR}" UT_CORE_DIR="${UT_CORE_DIR}"
-    if [ $? -ne 0 ]; then
-        echo -e "${BOLD}╔════════════════════════════════════════════════╗${RESET}"
-        echo -e "${BOLD}* ${RED}Failed to build the vcomponent Service. Exiting.${RESET}"
-        echo -e "${BOLD}╚════════════════════════════════════════════════╝${RESET}"
-        exit 1
-    fi
-
-    popd
-}
-
-###############################################################################
 # Function to create the Flash bin for vcomponent
 ###############################################################################
 get_vcomponent_flash_images()
@@ -340,7 +312,6 @@ elif [[ "$1" == [Tt]arget=* ]]; then
     build_aidl_libs
     build_ut_core
     build_halif_test
-    build_vcomponent_services
     get_vcomponent_flash_images
     install_test
     echo -e "${BOLD}╔════════════════════════════════╗${RESET}"
