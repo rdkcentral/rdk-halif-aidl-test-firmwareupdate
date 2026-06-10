@@ -36,7 +36,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
     """
     Validate all supported Flash image types
     """
-    def __init__(self, log:logModule=None,moduleName:str=None):
+    def __init__(self, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
