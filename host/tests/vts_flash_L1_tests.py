@@ -62,7 +62,7 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
 
         self.utMenu.start()
 
-        testsuites = self.testCaseConfiguration.fields.get('test_suites')
+        testsuites = testCaseConfiguration.fields.get('test_suites')
         finalresult = True
 
         for testsuite in testsuites:
