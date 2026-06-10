@@ -53,7 +53,6 @@ cd rdk-halif-aidl-test-flash
 ```bash
 export UT_CORE_VERSION=5.0.0
 export RDK_HALIF_AIDL_VERSION=0.15.0
-export VCOMPONENT_FLASH_VERSION=0.1.0
 export AIDL_BIN=/path/to/aidl
 export LINUX_BINDER_OUT_DIR=/path/to/local
 ```
@@ -187,39 +186,6 @@ Flash:
 ---
 
 #### Notes
-
-##### VCOMPONENT MODE
-When testing in vComponent mode, images are generated dynamically and copied automatically into:
-
-```
-<target_directory>/Flash/images/
-```
-
-Example target directory:
-```
-/ tmp /
-```
-
-So image paths become:
-
-```
-/tmp/Flash/images/flash_valid_PCI.bin
-/tmp/Flash/images/flash_valid_DRI.bin
-/tmp/Flash/images/flash_valid_SPLASH.bin
-/tmp/Flash/images/flash_valid_BOOTLOADER.bin
-
-/tmp/Flash/images/flash_valid_PCCI.bin
-/tmp/Flash/images/PCI_invalid_size.bin
-/tmp/Flash/images/PCI_invalid_signature.bin
-/tmp/Flash/images/PCI_invalid_product.bin
-/tmp/Flash/images/PCI_verify_fail.bin
-/tmp/Flash/images/PCI_verify_signature_fail.bin
-```
-
----
-
-##### ACTUAL HARDWARE COMPONENT MODE
-For real hardware testing:
 
 - Replace `<path_to_…>` in the YAML with **real** flash image paths on the DUT.
 - Each negative test image must represent the **actual expected failure case**:
