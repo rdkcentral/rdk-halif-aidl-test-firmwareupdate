@@ -32,17 +32,17 @@
  */
 
 /**
- * @addtogroup FLASH  Module
+ * @addtogroup FIRMWAREUPDATE  Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_HELPER FLASH HAL Tests helper functions
+ * @defgroup FIRMWAREUPDATE_HALTEST_HELPER FirmwareUpdate HAL Tests helper functions
  * @{
  * @parblock
  *
@@ -58,13 +58,13 @@
  */
 
 /**
- * @file vts_flash_helper_functions.cpp
+ * @file vts_firmwareupdate_helper_functions.cpp
  *
  */
 
-#include "vts_flash_helper_functions.h"
+#include "vts_firmwareupdate_helper_functions.h"
 
-const ut_control_keyStringMapping_t bool_mapTable_flash[] =
+const ut_control_keyStringMapping_t bool_mapTable_firmwareupdate[] =
 {
     {"false", (int32_t) false},
     {"true",  (int32_t) true},
@@ -72,7 +72,7 @@ const ut_control_keyStringMapping_t bool_mapTable_flash[] =
 };
 
 /* Status::Exception */
-const ut_control_keyStringMapping_t statusFlashException_mapTable[] =
+const ut_control_keyStringMapping_t statusFirmwareUpdateException_mapTable[] =
 {
     {"EX_NONE",                  (int32_t) Status::EX_NONE},
     {"EX_SECURITY",              (int32_t) Status::EX_SECURITY},
@@ -88,31 +88,8 @@ const ut_control_keyStringMapping_t statusFlashException_mapTable[] =
     {"EX_TRANSACTION_FAILED",    (int32_t) Status::EX_TRANSACTION_FAILED},
     {NULL, -1}
 };
-std::string vecIntToString(std::vector<int32_t>& addrs)
-{
-    std::string s;
-    for (size_t i = 0; i < addrs.size(); ++i)
-    {
-        s += std::to_string(addrs[i]);
-        if (i != addrs.size() - 1) s += ", ";
-    }
-    return s;
-}
 
-std::string vecByteToHexString(const std::vector<uint8_t>& data)
-{
-    std::ostringstream oss;
-    oss << std::uppercase << std::hex;  // uppercase hex letters
-    for (size_t i = 0; i < data.size(); ++i)
-    {
-        oss << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
-        if (i + 1 < data.size())
-            oss << ",";
-    }
-    return oss.str();
-}
-
-/** @} */ // End of FLASHHALTEST_HELPER
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_HELPER
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

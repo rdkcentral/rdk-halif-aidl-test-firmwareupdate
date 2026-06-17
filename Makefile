@@ -68,12 +68,18 @@ endif
 SRC_DIRS := $(FLASH_TEST_DIR)
 SRC_DIRS += $(ROOT_DIR)/test
 
-INC_DIRS := $(ROOT_DIR)/build/current/h/
-INC_DIRS += $(ROOT_DIR)/build/usr/include
+# Versioned include dir and binder out dir resolved by build.sh
+HALIF_AIDL_INC_DIR ?= $(error HALIF_AIDL_INC_DIR is not set - run via build.sh)
+BINDER_SDK_INCLUDE_DIR ?= $(error BINDER_SDK_INCLUDE_DIR is not set - run via build.sh)
+BINDER_SDK_LIB_DIR ?= $(error BINDER_SDK_LIB_DIR is not set - run via build.sh)
+
+INC_DIRS := $(HALIF_AIDL_INC_DIR)
+INC_DIRS += $(BINDER_SDK_INCLUDE_DIR)
 INC_DIRS += $(SRC_DIRS)
 
 XLDFLAGS := -L$(ROOT_DIR)/build/usr/lib
-XLDFLAGS += -Wl,-rpath-link=$(ROOT_DIR)/build/usr/lib -Wl,--export-dynamic -Wl,-rpath,.
+XLDFLAGS += -L$(BINDER_SDK_LIB_DIR)
+XLDFLAGS += -Wl,-rpath-link=$(ROOT_DIR)/build/usr/lib -Wl,-rpath-link=$(BINDER_SDK_LIB_DIR) -Wl,--export-dynamic -Wl,-rpath,.
 XLDFLAGS += -lssl -lcrypto -lbinder -lutils
 XLDFLAGS += -laidl_client
 

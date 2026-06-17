@@ -32,23 +32,23 @@
  */
 
 /**
- * @addtogroup FLASH Module
+ * @addtogroup FIRMWAREUPDATE FirmwareUpdate Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_HELPER_HEADER FLASH HAL Tests helper functions Header File
+ * @defgroup FIRMWAREUPDATE_HALTEST_INIT FirmwareUpdate HAL Tests helper functions
  * @{
  * @parblock
  *
- * ### Helper functions for VTS tests :
+ * ### Initialization functions for VTS tests :
  *
- * Helper functions required for the module across all vendors.
+ * Initialization functions required for the module across all vendors.
  *
  * **Pre-Conditions:**  None @n
  * **Dependencies:** None @n
@@ -58,49 +58,65 @@
  */
 
 /**
- * @file vts_flash_helper_functions.h
+ * @file vts_firmwareupdate_init.cpp
  *
  */
 
-#ifndef __VTS_FLASH_HELPER_H__
-#define __VTS_FLASH_HELPER_H__
-
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include <chrono>
 #include <ut.h>
 #include <ut_log.h>
-#include <ut_kvp_profile.h>
-#include <ut_control_plane.h>
-
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
 #include <binder/IPCThreadState.h>
 #include <binder/Status.h>
 #include <utils/String16.h>
 
-#include "com/rdk/hal/flash/BnFlashListener.h"
-#include "com/rdk/hal/flash/IFlash.h"
-#include "com/rdk/hal/flash/FlashImageResult.h"
-#include "com/rdk/hal/flash/IFlashListener.h"
+#include "com/rdk/hal/firmwareupdate/BpFirmwareUpdateListener.h"
+#include "com/rdk/hal/firmwareupdate/IFirmwareUpdate.h"
+#include "com/rdk/hal/firmwareupdate/FirmwareUpdateResult.h"
+#include "com/rdk/hal/firmwareupdate/IFirmwareUpdateListener.h"
+
+#include "vts_firmwareupdate_init.h"
 
 using android::sp;
 using android::String16;
 using android::defaultServiceManager;
 using android::binder::Status;
 
-extern const ut_control_keyStringMapping_t bool_mapTable_flash[];
-extern const ut_control_keyStringMapping_t statusFlashException_mapTable[];
+using namespace com::rdk::hal;
+using namespace com::rdk::hal::firmwareupdate;
 
-std::string vecIntToString(std::vector<int32_t>& addrs);
-std::string vecByteToHexString(const std::vector<uint8_t>& data);
+sp<IFirmwareUpdate> gFirmwareUpdateHandle = nullptr;
 
-#endif //__VTS_FLASH_HELPER_H__
+static UT_status_t vts_firmwareupdate_getService()
+{
+    gFirmwareUpdateHandle = android::interface_cast<IFirmwareUpdate>(
+                defaultServiceManager()->getService(String16(IFirmwareUpdate::serviceName().c_str())));
 
-/** @} */ // End of FLASH_HALTEST_HELPER_HEADER
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+    if (gFirmwareUpdateHandle == nullptr)
+    {
+        UT_LOG_ERROR("FIRMWAREUPDATE Service not available");
+        return UT_STATUS_FAILURE;
+    }
+    return UT_STATUS_OK;
+}
+
+UT_status_t VTS_FIRMWAREUPDATE_init()
+{
+    if(vts_firmwareupdate_getService() != UT_STATUS_OK)
+    {
+        UT_LOG_ERROR("Failed to get FIRMWAREUPDATE Service");
+        return UT_STATUS_FAILURE;
+    }
+    return UT_STATUS_OK;
+}
+
+void VTS_FIRMWAREUPDATE_destroy()
+{
+    UT_LOG_INFO("Destroying VTS_FIRMWAREUPDATE...");
+    // De-initialization code goes here
+}
+
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_INIT
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

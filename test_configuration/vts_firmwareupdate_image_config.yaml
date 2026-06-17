@@ -30,6 +30,6 @@ Flash:
     ERROR_IMAGE_INVALID_SIZE: ""                # TODO: update with path to invalid size image
     ERROR_IMAGE_INVALID_SIGNATURE: ""           # TODO: update with path to invalid signature image
     ERROR_IMAGE_INVALID_PRODUCT: ""             # TODO: update with path to invalid product image
-    ERROR_FLASH_VERIFY_FAILED: ""               # TODO: update with path to verify failed image
-    ERROR_FLASH_VERIFY_SIGNATURE_FAILED: ""     # TODO: update with path to verify signature image
+    ERROR_FW_UPDATE_VERIFY_FAILED: ""           # TODO: update with path to verify failed image
+    ERROR_FW_UPDATE_VERIFY_SIGNATURE_FAILED: "" # TODO: update with path to verify signature image
 

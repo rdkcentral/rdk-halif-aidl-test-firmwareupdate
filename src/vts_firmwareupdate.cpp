@@ -32,23 +32,23 @@
  */
 
 /**
- * @addtogroup FLASH  Module
+ * @addtogroup FIRMWAREUPDATE  Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_HELPER_HEADER FLASH HAL Tests helper functions Header File
+ * @defgroup FIRMWAREUPDATE_HALTEST_HELPER_HEADER FirmwareUpdate HAL Tests helper functions Header File
  * @{
  * @parblock
  *
- * ### Common functions/macros required for the FLASH module :
+ * ### Common functions/macros required for the FirmwareUpdate module :
  *
- * Common functions/macros required for the FLASH module .
+ * Common functions/macros required for the FirmwareUpdate module.
  *
  * **Pre-Conditions:**  None @n
  * **Dependencies:** None @n
@@ -58,17 +58,17 @@
  */
 
 /**
- * @file vts_flash.cpp
+ * @file vts_firmwareupdate.cpp
  *
  */
 
-#include "vts_flash.h"
-#include "vts_flash_helper_functions.h"
+#include "vts_firmwareupdate.h"
+#include "vts_firmwareupdate_helper_functions.h"
 
-/* Implementation of Flash Listener methods */
-android::binder::Status FlashListener::onProgress(int32_t percentComplete)
+/* Implementation of FirmwareUpdate listener methods */
+android::binder::Status VtsFirmwareUpdateListener::onProgress(int32_t percentComplete)
 {
-    UT_LOG_INFO("FlashListener::onProgress called with percentComplete[%d]",percentComplete);
+    UT_LOG_INFO("VtsFirmwareUpdateListener::onProgress called with percentComplete[%d]",percentComplete);
     std::lock_guard<std::mutex> lock(mMutex);
     mProgressSequence.push_back(percentComplete);
     UT_LOG_INFO("[L3] onProgress: %d%%\n", percentComplete);
@@ -76,8 +76,8 @@ android::binder::Status FlashListener::onProgress(int32_t percentComplete)
     return ::android::binder::Status::ok();
 }
 
-android::binder::Status FlashListener::onCompleted(
-    FlashImageResult result,
+android::binder::Status VtsFirmwareUpdateListener::onCompleted(
+    FirmwareUpdateResult result,
     const std::string& report)
 {
     {
@@ -90,7 +90,7 @@ android::binder::Status FlashListener::onCompleted(
     return ::android::binder::Status::ok();
 }
 
-bool FlashListener::waitForCompletion(int maxWaitMs)
+bool VtsFirmwareUpdateListener::waitForCompletion(int maxWaitMs)
 {
     std::unique_lock<std::mutex> lock(mMutex);
 
@@ -98,7 +98,7 @@ bool FlashListener::waitForCompletion(int maxWaitMs)
                         std::chrono::milliseconds(maxWaitMs),
                         [this]() { return mCompleted; });
 }
-/** @} */ // End of FLASH_HALTEST_HEADER
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_HEADER
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

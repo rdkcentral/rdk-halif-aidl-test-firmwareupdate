@@ -32,23 +32,23 @@
  */
 
 /**
- * @addtogroup FLASH FLASH Module
+ * @addtogroup FIRMWAREUPDATE FirmwareUpdate Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_HEADER FLASH HAL Tests helper functions Header File
+ * @defgroup FIRMWAREUPDATE_HALTEST_HEADER FirmwareUpdate HAL Tests helper functions Header File
  * @{
  * @parblock
  *
- * ### Common functions/macros required for the flash :
+ * ### Common functions/macros required for the firmware update:
  *
- * Common functions/macros required for the flash .
+ * Common functions/macros required for the firmware update.
  *
  * **Pre-Conditions:**  None @n
  * **Dependencies:** None @n
@@ -58,12 +58,12 @@
  */
 
 /**
- * @file vts_flash.h
+ * @file vts_firmwareupdate.h
  *
  */
 
-#ifndef __VTS_FLASH_H__
-#define __VTS_FLASH_H__
+#ifndef __VTS_FIRMWAREUPDATE_H__
+#define __VTS_FIRMWAREUPDATE_H__
 
 #include <iostream>
 #include <vector>
@@ -84,10 +84,11 @@
 #include <binder/Status.h>
 #include <utils/String16.h>
 
-#include "com/rdk/hal/flash/IFlash.h"
-#include "com/rdk/hal/flash/BnFlashListener.h"
-#include "com/rdk/hal/flash/IFlashListener.h"
-#include "vts_flash_helper_functions.h"
+#include "com/rdk/hal/firmwareupdate/IFirmwareUpdate.h"
+#include "com/rdk/hal/firmwareupdate/BnFirmwareUpdateListener.h"
+#include "com/rdk/hal/firmwareupdate/IFirmwareUpdateListener.h"
+#include "com/rdk/hal/firmwareupdate/FirmwareUpdateResult.h"
+#include "vts_firmwareupdate_helper_functions.h"
 
 using android::sp;
 using android::String16;
@@ -97,23 +98,23 @@ using namespace std;
 using namespace std::chrono;
 
 using namespace com::rdk::hal;
-using namespace com::rdk::hal::flash;
+using namespace com::rdk::hal::firmwareupdate;
 
 /* =========================================================
  * SUCCESS MACRO
  * ========================================================= */
-#define FLASHIMAGEFROMFILE_SUCCESS(flashHandle, filename, listener, maxFlashwaitDurationMs) \
+#define FIRMWAREUPDATEFROMFILE_SUCCESS(firmwareUpdateHandle, filename, listener, maxFirmwareUpdateWaitDurationMs) \
     do { \
         ::android::binder::Status status; \
         bool _aidl_return = false; \
         UT_ASSERT_NOT_EQUAL_FATAL(listener.get(), nullptr); \
-        UT_LOG_DEBUG("Calling flashImageFromFile filename[%s]", filename.c_str()); \
-        status = (flashHandle)->flashImageFromFile(filename, listener, &_aidl_return); \
+        UT_LOG_DEBUG("Calling updateFirmwareFromFile filename[%s]", filename.c_str()); \
+        status = (firmwareUpdateHandle)->updateFirmwareFromFile(filename, listener, &_aidl_return); \
         UT_ASSERT_TRUE(status.isOk()); \
         UT_ASSERT_EQUAL(status.exceptionCode(), Status::EX_NONE); \
         UT_ASSERT_TRUE(_aidl_return); \
-        WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs); \
-        UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::SUCCESS); \
+        WAIT_FOR_COMPLETION(listener, maxFirmwareUpdateWaitDurationMs); \
+        UT_ASSERT_EQUAL(listener->mFinalResult, FirmwareUpdateResult::SUCCESS); \
         UT_ASSERT_TRUE(!listener->mProgressSequence.empty()); \
         UT_ASSERT_TRUE(listener->mProgressSequence.front() == 0); \
         UT_ASSERT_TRUE(listener->mProgressSequence.back() == 100); \
@@ -122,12 +123,12 @@ using namespace com::rdk::hal::flash;
 /* =========================================================
  * NEGATIVE MACRO
  * ========================================================= */
-#define FLASHIMAGEFROMFILE_NEGATIVE(flashHandle, filename, listener, expectedException) \
+#define FIRMWAREUPDATEFROMFILE_NEGATIVE(firmwareUpdateHandle, filename, listener, expectedException) \
     do { \
         ::android::binder::Status status; \
         bool _aidl_return = false; \
-        UT_LOG_DEBUG("Calling flashImageFromFile filename[%s]", filename.c_str()); \
-        status = (flashHandle)->flashImageFromFile(filename, listener, &_aidl_return); \
+        UT_LOG_DEBUG("Calling updateFirmwareFromFile filename[%s]", filename.c_str()); \
+        status = (firmwareUpdateHandle)->updateFirmwareFromFile(filename, listener, &_aidl_return); \
         if (expectedException == Status::EX_NONE) \
         { \
             UT_ASSERT_TRUE(status.isOk()); \
@@ -153,58 +154,58 @@ using namespace com::rdk::hal::flash;
  *       Current implementation uses condition_variable but may need
  *       fallback depending on platform glib differences.
  */
-#define WAIT_FOR_COMPLETION(listener, maxFlashwaitDurationMs)                  \
+#define WAIT_FOR_COMPLETION(listener, maxFirmwareUpdateWaitDurationMs)         \
     do {                                                                       \
                                                                       \
-        bool completed = (listener)->waitForCompletion(maxFlashwaitDurationMs);\
+        bool completed = (listener)->waitForCompletion(maxFirmwareUpdateWaitDurationMs);\
                                                                                \
         if (!completed) {                                                      \
             UT_LOG_ERROR("WAIT_FOR_COMPLETION timeout after %d ms",           \
-                         (maxFlashwaitDurationMs));                            \
+                         (maxFirmwareUpdateWaitDurationMs));                   \
         }                                                                      \
                                                                                \
         UT_ASSERT_TRUE((listener)->mCompleted);                                 \
     } while(0)
 
-#define FLASHIMAGEFROMFILE_VALIDATE_ERROR_RESULT(flashHandle, filename, listener, expectedError, waitMs) \
+#define FIRMWAREUPDATEFROMFILE_VALIDATE_ERROR_RESULT(firmwareUpdateHandle, filename, listener, expectedError, waitMs) \
     do { \
         ::android::binder::Status status; \
         bool _aidl_return = false; \
         UT_ASSERT_NOT_EQUAL_FATAL(listener.get(), nullptr); \
-        UT_LOG_DEBUG("Calling flashImageFromFile filename[%s]", filename.c_str()); \
-        status = (flashHandle)->flashImageFromFile(filename, listener, &_aidl_return); \
+        UT_LOG_DEBUG("Calling updateFirmwareFromFile filename[%s]", filename.c_str()); \
+        status = (firmwareUpdateHandle)->updateFirmwareFromFile(filename, listener, &_aidl_return); \
         UT_ASSERT_TRUE(status.isOk()); \
         UT_ASSERT_EQUAL(status.exceptionCode(), Status::EX_NONE); \
         UT_ASSERT_TRUE(_aidl_return); \
         WAIT_FOR_COMPLETION(listener, waitMs); \
         UT_ASSERT_EQUAL(listener->mFinalResult, expectedError); \
-        UT_ASSERT_NOT_EQUAL(listener->mFinalResult, FlashImageResult::SUCCESS); \
+        UT_ASSERT_NOT_EQUAL(listener->mFinalResult, FirmwareUpdateResult::SUCCESS); \
     } while (0)
 
 /* =========================================================
  * TEST LISTENER 
  * ========================================================= */
-class FlashListener : public BnFlashListener
+class VtsFirmwareUpdateListener : public BnFirmwareUpdateListener
 {
 public:
-    FlashListener() = default;
-    virtual ~FlashListener() = default;
+    VtsFirmwareUpdateListener() = default;
+    virtual ~VtsFirmwareUpdateListener() = default;
 
     std::vector<int> mProgressSequence;
-    FlashImageResult mFinalResult = FlashImageResult::ERROR_GENERAL;
+    FirmwareUpdateResult mFinalResult = FirmwareUpdateResult::ERROR_GENERAL;
     bool mCompleted = false;
 
     ::android::binder::Status onProgress(int32_t percentComplete) override;
-    ::android::binder::Status onCompleted(::com::rdk::hal::flash::FlashImageResult result, const ::std::string& report) override;
+    ::android::binder::Status onCompleted(::com::rdk::hal::firmwareupdate::FirmwareUpdateResult result, const ::std::string& report) override;
     bool waitForCompletion(int maxWaitMs);
 private:
     std::mutex mMutex;
     std::condition_variable mCv;
 
 };
-#endif // __VTS_FLASH_H__
+#endif // __VTS_FIRMWAREUPDATE_H__
 
-/** @} */ // End of FLASH_HALTEST_HEADER
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH Module
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_HEADER
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE Module
 /** @} */ // End of HPK

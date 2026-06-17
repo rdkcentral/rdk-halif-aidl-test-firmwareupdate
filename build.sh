@@ -31,15 +31,15 @@ declare -r TOP=`dirname $(realpath $0)`
 declare -r HALIF_VERSION=current
 RDK_HALIF_AIDL_VERSION="${RDK_HALIF_AIDL_VERSION="main"}"
 RDK_HALIF_TEST_BASE_URL="https://github.com/rdkcentral/rdk-halif-binder-test-"
-VCOMPONENT_FLASH_VERSION="${VCOMPONENT_FLASH_VERSION="main"}"
-OUT_TAR_FILE=vts-flash.tar.gz
+VCOMPONENT_FIRMWAREUPDATE_VERSION="${VCOMPONENT_FIRMWAREUPDATE_VERSION="main"}"
+OUT_TAR_FILE=vts-firmwareupdate.tar.gz
 
 declare -A HALIF_COMPONENTS=(
-  [flash]="current"
+    [firmwareupdate]="current"
 )
 
 declare -A HALIF_TEST_COMPONENTS=(
-  [flash]="RDK_HALIF_FLASH_TEST_VERSION"
+    [firmwareupdate]="RDK_HALIF_FIRMWAREUPDATE_TEST_VERSION"
 )
 
 # Define the directory where the repository will be cloned
@@ -51,79 +51,90 @@ declare -r BUILD_INSTALL_PREFIX=${TOP_BUILD_DIR}/usr
 declare -r AIDL_LIB_DIR=${TOP}/aidl_lib
 declare -r RDK_HAL_DIR=${TOP}/rdk-halif-aidl
 declare -r RDK_HAL_TEST_DIR=${TOP}/vts_hal_test_components
-declare -r PROFILES_DIR=${TOP}/profile
+declare -r PROFILES_DIR=${TOP}/profiles
 declare -r AV_L4_TEST_DIR=${RDK_HAL_TEST_DIR}/av_l4_tests
 
-DEF_LINUX_BINDER="`realpath ${TOP}/../`/linux_binder_idl"
-# AIDL_BIN: path of aidl compiler
-AIDL_BIN=${AIDL_BIN:-${DEF_LINUX_BINDER}/out/aidl}
-# LINUX_BINDER_OUT_DIR: output installed after building linux_binder_idl
-# contains bin/servicemanager, lib/libbinder etc
-LINUX_BINDER_OUT_DIR=${LINUX_BINDER_OUT_DIR:-${DEF_LINUX_BINDER}/local}
+LOCAL_BINDER_TOOLCHAIN_DIR=${BINDER_SOURCE_DIR:-${RDK_HAL_DIR}/build-tools/linux_binder_idl}
+LOCAL_BINDER_SDK_DIR=${BINDER_SDK_DIR:-${RDK_HAL_DIR}/out/target}
+LOCAL_BINDER_INCLUDE_DIR=${BINDER_SDK_INCLUDE_DIR:-${RDK_HAL_DIR}/out/build/include/binder_sdk}
+LOCAL_BINDER_LIB_DIR=${BINDER_SDK_LIB_DIR:-${LOCAL_BINDER_SDK_DIR}/lib/binder}
 
 mkdir -p $TOP_BUILD_DIR
 
-if [ ! -x $AIDL_BIN ]; then
-    echo -e "${BOLD}╔═════════════════════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}  ${RED}AIDL_BIN - ${AIDL_BIN}: path does not exists. Exiting.${RESET}"
-    echo -e "${BOLD}╚═════════════════════════════════════════════════════════════════════════════════╝${RESET}"
-    exit 1
-fi
-if [ ! -d $LINUX_BINDER_OUT_DIR ]; then
-    echo -e "${BOLD}╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BOLD}  ${RED}LINUX_BINDER_OUT_DIR - ${LINUX_BINDER_OUT_DIR}: path does not exists. Exiting.${RESET}"
-    echo -e "${BOLD}╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝${RESET}"
-    exit 1
-fi
-
-declare -r AIDL_BIN=`realpath ${AIDL_BIN}`
-declare -r LINUX_BINDER_OUT_DIR=`realpath ${LINUX_BINDER_OUT_DIR}`
-
 ###############################################################################
-# Function to install linux-binder service manager, headers, and libraries
+# Function to validate or stage the local Binder SDK via rdk-halif-aidl/build_binder.sh
 ###############################################################################
-install_linux_binder()
+verify_local_binder_sdk()
 {
-    echo "Install linux-binder 'service manager, headers and libraries'"
-    install -d ${BUILD_INSTALL_PREFIX}/bin ${BUILD_INSTALL_PREFIX}/lib ${BUILD_INSTALL_PREFIX}/include
-    install -t ${BUILD_INSTALL_PREFIX}/bin ${LINUX_BINDER_OUT_DIR}/bin/*
-    install -t ${BUILD_INSTALL_PREFIX}/lib ${LINUX_BINDER_OUT_DIR}/lib/*
-    cp -apr ${LINUX_BINDER_OUT_DIR}/include/* ${BUILD_INSTALL_PREFIX}/include/
+    local sdk_ready="${LOCAL_BINDER_SDK_DIR}/.sdk_ready"
+    local binder_builder="${RDK_HAL_DIR}/build_binder.sh"
+
+    if [ ! -f "${sdk_ready}" ]; then
+        echo -e "${BOLD}${YELLOW}Local Binder SDK not staged. Bootstrapping via ${binder_builder}${RESET}"
+        BINDER_SOURCE_DIR="${LOCAL_BINDER_TOOLCHAIN_DIR}" "${binder_builder}"
+        if [ $? -ne 0 ] || [ ! -f "${sdk_ready}" ]; then
+            echo -e "${BOLD}${RED}ERROR: Local Binder SDK is not staged at ${LOCAL_BINDER_SDK_DIR}${RESET}"
+            exit 1
+        fi
+    fi
+
+    if [ ! -d "${LOCAL_BINDER_INCLUDE_DIR}" ]; then
+        echo -e "${BOLD}${RED}ERROR: Local Binder headers not found: ${LOCAL_BINDER_INCLUDE_DIR}${RESET}"
+        exit 1
+    fi
+
+    if [ ! -d "${LOCAL_BINDER_LIB_DIR}" ]; then
+        echo -e "${BOLD}${RED}ERROR: Local Binder libraries not found: ${LOCAL_BINDER_LIB_DIR}${RESET}"
+        exit 1
+    fi
 }
 
 ###############################################################################
-# Function to checkout the halif aidl repository and convert the aidl files
-# to C++ headers
+# Function to resolve versioned src/include dirs from rdk-halif-aidl metadata
 ###############################################################################
-generate_hal_interfaces()
+resolve_halif_versions()
 {
     # Clone the repository if not already present
     if [ ! -d "$RDK_HAL_DIR" ]; then
-        echo "Checking out version: " $RDK_HALIF_AIDL_VERSION
+        echo "Checking out version: $RDK_HALIF_AIDL_VERSION"
         git clone -b $RDK_HALIF_AIDL_VERSION 'https://github.com/rdkcentral/rdk-halif-aidl.git' $RDK_HAL_DIR
-    fi
-
-    # Iterate through the HALIF compoenents
-    for component in "${!HALIF_COMPONENTS[@]}"; do
-        version=${HALIF_COMPONENTS[$component]}
-        echo "Component: $component, Version: $version"
-
-        HAL_TOP_BUILD_DIR=${TOP_BUILD_DIR}/${component}_aidl
-        AIDL_GEN_DIR="${TOP_BUILD_DIR}/$HALIF_VERSION"
-
-        cmake \
-        -DAIDL_BIN=$AIDL_BIN \
-        -DAIDL_GEN_DIR=$AIDL_GEN_DIR \
-        -DAIDL_SRC_VERSION=$version \
-        -DAIDL_TARGET=$component  \
-        -B ${HAL_TOP_BUILD_DIR} \
-        $RDK_HAL_DIR
         if [ $? -ne 0 ]; then
             echo -e "${BOLD}╔══════════════════════════════════════════════╗${RESET}"
-            echo -e "${BOLD}* ${RED}Failed to Convert AIDL files. Exiting.${RESET}"
+            echo -e "${BOLD}* ${RED}Failed to clone rdk-halif-aidl. Exiting.${RESET}"
             echo -e "${BOLD}╚══════════════════════════════════════════════╝${RESET}"
             exit 1
         fi
+    fi
+
+    for component in "${!HALIF_COMPONENTS[@]}"; do
+        local metadata="${RDK_HAL_DIR}/${component}/metadata.yaml"
+        if [ ! -f "$metadata" ]; then
+            echo -e "${BOLD}${RED}ERROR: metadata.yaml not found: ${metadata}${RESET}"
+            exit 1
+        fi
+
+        local version
+        version=$(grep -m1 '^version:' "$metadata" | awk '{print $2}')
+        if [ -z "$version" ]; then
+            echo -e "${BOLD}${RED}ERROR: Could not parse version from ${metadata}${RESET}"
+            exit 1
+        fi
+
+        local src_dir="${RDK_HAL_DIR}/${component}/${version}/src"
+        local inc_dir="${RDK_HAL_DIR}/${component}/${version}/include"
+
+        if [ ! -d "$src_dir" ]; then
+            echo -e "${BOLD}${RED}ERROR: versioned src dir not found: ${src_dir}${RESET}"
+            exit 1
+        fi
+        if [ ! -d "$inc_dir" ]; then
+            echo -e "${BOLD}${RED}ERROR: versioned include dir not found: ${inc_dir}${RESET}"
+            exit 1
+        fi
+
+        echo -e "${BOLD}${GREEN}${component}${RESET}: version=${YELLOW}${version}${RESET}"
+        HALIF_AIDL_SRC_DIR=$(realpath "$src_dir")
+        HALIF_AIDL_INC_DIR=$(realpath "$inc_dir")
     done
 }
 
@@ -133,7 +144,11 @@ generate_hal_interfaces()
 build_aidl_libs()
 {
     pushd ${AIDL_LIB_DIR}
-    make -j`nproc`
+    make -j`nproc` \
+        HALIF_AIDL_SRC_DIR="${HALIF_AIDL_SRC_DIR}" \
+        HALIF_AIDL_INC_DIR="${HALIF_AIDL_INC_DIR}" \
+        BINDER_SDK_INCLUDE_DIR="${LOCAL_BINDER_INCLUDE_DIR}" \
+        BINDER_SDK_LIB_DIR="${LOCAL_BINDER_LIB_DIR}"
     if [ $? -ne 0 ]; then
         echo -e "${BOLD}╔══════════════════════════════════════════════╗${RESET}"
         echo -e "${BOLD}* ${RED}Failed to build the AIDL Lib. Exiting.${RESET}       ${BOLD}*${RESET}"
@@ -194,9 +209,14 @@ build_vcomponent_services()
 
     pushd ${VCOMPONENT_DIR}
 
-    git checkout ${VCOMPONENT_FLASH_VERSION}
+    git checkout ${VCOMPONENT_FIRMWAREUPDATE_VERSION}
 
-    make -j"$(nproc)" -C "${TOP}/vcomponent" BUILD_DIR="${TOP_BUILD_DIR}" UT_CORE_DIR="${UT_CORE_DIR}"
+    make -j"$(nproc)" -C "${TOP}/vcomponent" \
+        BUILD_DIR="${TOP_BUILD_DIR}" \
+        UT_CORE_DIR="${UT_CORE_DIR}" \
+        HALIF_AIDL_INC_DIR="${HALIF_AIDL_INC_DIR}" \
+        BINDER_SDK_INCLUDE_DIR="${LOCAL_BINDER_INCLUDE_DIR}" \
+        BINDER_SDK_LIB_DIR="${LOCAL_BINDER_LIB_DIR}"
     if [ $? -ne 0 ]; then
         echo -e "${BOLD}╔════════════════════════════════════════════════╗${RESET}"
         echo -e "${BOLD}* ${RED}Failed to build the vcomponent Service. Exiting.${RESET}"
@@ -208,45 +228,15 @@ build_vcomponent_services()
 }
 
 ###############################################################################
-# Function to create the Flash bin for vcomponent
-###############################################################################
-get_vcomponent_flash_images()
-{
-    echo "Calling get_vcomponent_flash_images"
-    # Create the input directory for flash images
-    FLASH_DIR="$TOP_BUILD_DIR/bin/images"
-
-    mkdir -p "$FLASH_DIR"
-    echo "FLASH_DIR=$FLASH_DIR"
-    # List of all flash images (from your YAML)
-    FLASH_IMAGES=(
-        "flash_valid_PCI.bin"
-        "flash_valid_DRI.bin"
-        "flash_valid_SPLASH.bin"
-        "flash_valid_BOOTLOADER.bin"
-        "flash_valid_PCCI.bin"
-        "PCI_invalid_size.bin"
-        "PCI_invalid_signature.bin"
-        "PCI_invalid_product.bin"
-        "PCI_verify_fail.bin"
-        "PCI_verify_signature_fail.bin"
-    )
-
-    # Create each file using touch
-    for file in "${FLASH_IMAGES[@]}"; do
-        touch "$FLASH_DIR/$file"
-        echo "Created flash image: $FLASH_DIR/$file"
-    done
-}
-
-
-###############################################################################
 # Function to Build HALIF test
 ###############################################################################
 build_halif_test()
 {
     # Build the tests
-    make -j`nproc` -C ${TOP}
+    make -j`nproc` -C ${TOP} \
+        HALIF_AIDL_INC_DIR="${HALIF_AIDL_INC_DIR}" \
+        BINDER_SDK_INCLUDE_DIR="${LOCAL_BINDER_INCLUDE_DIR}" \
+        BINDER_SDK_LIB_DIR="${LOCAL_BINDER_LIB_DIR}"
     if [ $? -ne 0 ]; then
         echo -e "${BOLD}╔════════════════════════════════════════════╗${RESET}"
         echo -e "${BOLD}* ${RED}Failed to build the main tests. Exiting.${RESET}"
@@ -322,8 +312,10 @@ help()
 echo -e "${BOLD}${GREEN}VTS Version            : ${RESET}${YELLOW}$(git rev-parse --abbrev-ref HEAD)${RESET}"
 echo -e "${BOLD}${GREEN}UT_CORE_VERSION        : ${RESET}${YELLOW}$UT_CORE_VERSION${RESET}"
 echo -e "${BOLD}${GREEN}RDK_HALIF_AIDL_VERSION : ${RESET}${YELLOW}$RDK_HALIF_AIDL_VERSION${RESET}"
-echo -e "${BOLD}${GREEN}AIDL_BIN               : ${RESET}${YELLOW}$AIDL_BIN${RESET}"
-echo -e "${BOLD}${GREEN}LINUX_BINDER_OUT_DIR   : ${RESET}${YELLOW}$LINUX_BINDER_OUT_DIR${RESET}"
+echo -e "${BOLD}${GREEN}BINDER_SOURCE_DIR      : ${RESET}${YELLOW}$LOCAL_BINDER_TOOLCHAIN_DIR${RESET}"
+echo -e "${BOLD}${GREEN}BINDER_SDK_DIR         : ${RESET}${YELLOW}$LOCAL_BINDER_SDK_DIR${RESET}"
+echo -e "${BOLD}${GREEN}BINDER_SDK_INCLUDE_DIR : ${RESET}${YELLOW}$LOCAL_BINDER_INCLUDE_DIR${RESET}"
+echo -e "${BOLD}${GREEN}BINDER_SDK_LIB_DIR     : ${RESET}${YELLOW}$LOCAL_BINDER_LIB_DIR${RESET}"
 
 ###############################################################################
 # Main script execution starts here
@@ -335,13 +327,12 @@ elif [ "$1" == "dist_clean" ]; then
 elif [ "$1" == "help" ]; then
     help
 elif [[ "$1" == [Tt]arget=* ]]; then
-    install_linux_binder
-    generate_hal_interfaces
+    resolve_halif_versions
+    verify_local_binder_sdk
     build_aidl_libs
     build_ut_core
     build_halif_test
     build_vcomponent_services
-    get_vcomponent_flash_images
     install_test
     echo -e "${BOLD}╔════════════════════════════════╗${RESET}"
     echo -e "${BOLD}* ${GREEN}Build Successful${RESET}               ${BOLD}*${RESET}"
