@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     UT_LOG_INFO("\t BUILD_TIMESTAMP: \033[0;32m%s\033[0m", BUILD_TIMESTAMP);
     UT_LOG_INFO("\t UNIFIED VTS Version: \033[0;32m%s\033[0m", HALIF_TEST_PROJECT_VERSION);
     UT_LOG_INFO("\t AIDL HALIF Version: \033[0;32m%s\033[0m",RDK_HALIF_AIDL_VERSION);
-    UT_LOG_INFO("\t VTS UNIFIED FIRMWAREUPDATE HALIF Test Version: \033[0;32m%s\033[0m",FLASH_VERSION);
+    UT_LOG_INFO("\t VTS UNIFIED FIRMWAREUPDATE HALIF Test Version: \033[0;32m%s\033[0m", FIRMWAREUPDATE_VERSION);
     UT_LOG_INFO("==========================================================================");
 
     result = VTS_FIRMWAREUPDATE_init();

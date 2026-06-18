@@ -42,11 +42,11 @@ $(info PROJECT_VERSION: $(VERSION))
 
 
 # Define module versions (use main VERSION if no distinct tags)
-FLASH_VERSION := $(shell git describe --tags --always 2>/dev/null || echo "$(VERSION)")
+FIRMWAREUPDATE_VERSION := $(shell git describe --tags --always 2>/dev/null || echo "$(VERSION)")
 BUILD_TIMESTAMP := $(shell date +"%Y-%m-%d_%H:%M:%S")
 
 # Print module versions
-$(info FLASH_VERSION: $(FLASH_VERSION))
+$(info FIRMWAREUPDATE_VERSION: $(FIRMWAREUPDATE_VERSION))
 
 # Read RDK_HALIF_AIDL_VERSION from environment, default to 'main'
 RDK_HALIF_AIDL_VERSION ?= main
@@ -56,7 +56,7 @@ $(info RDK_HALIF_AIDL_VERSION: $(RDK_HALIF_AIDL_VERSION))
 CXXFLAGS := -std=c++17 -g3 -O0 \
             -DHALIF_TEST_PROJECT_VERSION=\"$(VERSION)\" \
             -DRDK_HALIF_AIDL_VERSION=\"$(RDK_HALIF_AIDL_VERSION)\" \
-            -DFLASH_VERSION=\"$(FLASH_VERSION)\"
+			-DFIRMWAREUPDATE_VERSION=\"$(FIRMWAREUPDATE_VERSION)\"
 $(info CXXFLAGS: $(CXXFLAGS))
 CXXFLAGS += -DBUILD_TIMESTAMP=\"$(BUILD_TIMESTAMP)\"
 

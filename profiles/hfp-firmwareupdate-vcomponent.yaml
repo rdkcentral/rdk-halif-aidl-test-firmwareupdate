@@ -19,9 +19,9 @@
 # *
 #** ******************************************************************************
 
-# HAL Feature Profile for flash
+# HAL Feature Profile for FirmwareUpdate
 
-flash:                           # Component object begins
+FirmwareUpdate:                  # Component object begins
     progress:
         step_percent: 5          # % increment per progress callback (e.g., 1, 5, 10)
     supportedImages:
