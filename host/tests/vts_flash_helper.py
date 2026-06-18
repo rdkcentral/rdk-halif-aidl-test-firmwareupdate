@@ -65,11 +65,11 @@ class flashHelperClass(utHelperClass):
         self.waitTime = self.cpe.get("wait_time")
         self.device_type = self.cpe.get("device_type")
         self.platform = self.cpe.get("platform")
-        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName)
+        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName).replace("\\", "/")
 
         # Resolve local component and unified repo roots
-        component_root = os.path.normpath(os.path.join(dir_path, "../.."))
-        unified_root = os.path.normpath(os.path.join(dir_path, "../../../.."))
+        component_root = os.path.normpath(os.path.join(dir_path, "../..")).replace("\\", "/")
+        unified_root = os.path.normpath(os.path.join(dir_path, "../../../..")).replace("\\", "/")
 
         # Resolve all config paths based on run mode
         if not isUnifiedTest:
@@ -87,21 +87,21 @@ class flashHelperClass(utHelperClass):
             self.paths = {
                 "testMenuConfigFile": os.path.join(
                     unified_root, "host/tests/TestCases/vts_l3_test_setup.yaml"
-                ),
+                ).replace("\\", "/"),
                 "testCasesConfigFile": os.path.join(
                      component_root, "configs/vts_flash_testcase_configuration.yaml"
-                ),
+                ).replace("\\", "/"),
                 "imagesConfigFile": os.path.join(
                      component_root, "test_configuration/vts_flash_image_config.yaml"
-                ),
+                ).replace("\\", "/"),
                 "l3TestConfigFile": os.path.join(
                     component_root, "test_configuration/vts_l3_flash.yaml"
-                ),
+                ).replace("\\", "/"),
                 "moduleHFPFile": os.path.join(
                     component_root, "profiles/hfp-flash-vcomponent.yaml"
-                )
+                ).replace("\\", "/")
             }
-            artifactBaseDir = os.path.join(component_root, "host")
+            artifactBaseDir = os.path.join(component_root, "host").replace("\\", "/")
             targetCfgBase = os.path.join(self.targetWorkspace, "bin").replace("\\", "/")
 
         # Normalize all resolved paths to forward-slash form and keep both
@@ -138,7 +138,7 @@ class flashHelperClass(utHelperClass):
         # Copy required artifacts to target device
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         for artifact in self.testMenuConfiguration.test.artifacts:
-            filesPath = os.path.normpath(os.path.join(artifactBaseDir, artifact))
+            filesPath = os.path.normpath(os.path.join(artifactBaseDir, artifact)).replace("\\", "/")
             self.utilities.sftpCopy(self.hal_session, filesPath, self.targetWorkspace)
 
             if tarfile.is_tarfile(filesPath):
