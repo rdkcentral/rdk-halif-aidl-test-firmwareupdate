@@ -28,11 +28,11 @@ sys.path.append(os.path.join(dir_path, "../"))
 
 from raft.framework.plugins.ut_raft.configRead import ConfigRead
 from raft.framework.core.logModule import logModule
-from vts_flash_helper import flashHelperClass
+from vts_firmwareupdate_helper import firmwareupdateHelperClass
 
-FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
+FIRMWAREUPDATE_L3_TEST_SUITE_NAME = "VTS_L3_FIRMWAREUPDATE"
 
-class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
+class VTS_FIRMWAREUPDATE_L3_ConcurrentImage(firmwareupdateHelperClass):
     """
     Validate that concurrent Flash image requests are rejected.
 
@@ -44,17 +44,17 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
         """
         Initializes the test class
         """
-        self.testName = "flash_concurrentReject"
+        self.testName = "firmwareupdate_concurrentReject"
         qcId = "1"
         super().__init__(self.testName, qcId, log)
 
     def testFunction(self):
         """
-        Runs the L3 Flash concurrent rejection test.
+        Runs the L3 FirmwareUpdate concurrent rejection test.
 
         Loads the HFP profile, selects the first supported image type,
         configures the test for a SUCCESS outcome, copies the config to
-        the DUT, and executes the flash_concurrentReject test case via
+        the DUT, and executes the firmwareupdate_concurrentReject test case via
         the UT menu.
 
         Returns:
@@ -79,8 +79,8 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
         imageType = profileConfiguration.supportedImages[0]
         imageFile = validImageMap.get(imageType)
         
-        self.updateFlashTestConfig(imageFile, "SUCCESS")
-        self.log.stepStart(f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+        self.updateFirmwareTestConfig(imageFile, "SUCCESS")
+        self.log.stepStart(f'Test Suit: {FIRMWAREUPDATE_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
         self.log.step(f'Supported Image type: {imageType}, imageFile: {imageFile}')
 
         # Copy YAML to DUT
@@ -92,7 +92,7 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
 
         self.utMenu.start()
         output = self.utMenu.select(
-            FLASH_L3_TEST_SUITE_NAME,
+            FIRMWAREUPDATE_L3_TEST_SUITE_NAME,
             self.testName,
             None,
             self.waitTime,
@@ -100,11 +100,11 @@ class VTS_FLASH_L3_ConcurrentImage(flashHelperClass):
         )
 
         result = self.utMenu.collect_results(output, True)
-        self.log.stepResult(result, f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+        self.log.stepResult(result, f'Test Suit: {FIRMWAREUPDATE_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
         return result
 
 if __name__ == '__main__':
     summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog  = logModule(summaryLogName, level=logModule.INFO)
-    test = VTS_FLASH_L3_ConcurrentImage(summaryLog)
+    test = VTS_FIRMWAREUPDATE_L3_ConcurrentImage(summaryLog)
     test.run(False)

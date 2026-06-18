@@ -36,19 +36,19 @@ from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClas
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
 from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
 
-FLASH_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_flash_testMenuConfiguration.yaml")
-FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(os.path.join(dir_path, "../configs"), "vts_flash_testcase_configuration.yaml")
-FLASH_IMAGES_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_flash_image_config.yaml")
-FLASH_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_l3_flash.yaml")
+FIRMWAREUPDATE_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_firmwareupdate_testMenuConfiguration.yaml")
+FIRMWAREUPDATE_TESTCASES_CONFIGURATION_FILE = os.path.join(os.path.join(dir_path, "../configs"), "vts_firmwareupdate_testcase_configuration.yaml")
+FIRMWAREUPDATE_IMAGES_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_firmwareupdate_image_config.yaml")
+FIRMWAREUPDATE_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_l3_firmwareupdate.yaml")
 
-class flashHelperClass(utHelperClass):
+class firmwareupdateHelperClass(utHelperClass):
 
     def __init__(self, testName:str, qcId:str, log:logModule=None ):
         """
         Initializes the test class
         """
-        self.moduleName = "Flash"
-        self.profile_moduleName = "flash"
+        self.moduleName = "FirmwareUpdate"
+        self.profile_moduleName = "FirmwareUpdate"
         super().__init__(testName, qcId, log)
 
         self.log = log
@@ -70,10 +70,10 @@ class flashHelperClass(utHelperClass):
         self.platform = self.cpe.get("platform")
 
         # Load test menu and test case configuration files
-        self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
-        self.testMenuConfiguration = ConfigRead(FLASH_TEST_MENU_CONFIGURATION_FILE, self.moduleName)
-        self.testCaseConfiguration = ConfigRead(FLASH_TESTCASES_CONFIGURATION_FILE, self.moduleName)
-        self.testImageList = ConfigRead(FLASH_IMAGES_CONFIG_FILE, self.moduleName)
+        self.l3TestConfigFile = FIRMWAREUPDATE_L3_TEST_CONFIG_FILE
+        self.testMenuConfiguration = ConfigRead(FIRMWAREUPDATE_TEST_MENU_CONFIGURATION_FILE, self.moduleName)
+        self.testCaseConfiguration = ConfigRead(FIRMWAREUPDATE_TESTCASES_CONFIGURATION_FILE, self.moduleName)
+        self.testImageList = ConfigRead(FIRMWAREUPDATE_IMAGES_CONFIG_FILE, self.moduleName)
         self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute
 
         # Establish HAL session
@@ -119,7 +119,7 @@ class flashHelperClass(utHelperClass):
             results = False
         return results
 
-    def flashReadYaml(self, yaml_path: str) -> dict:
+    def readYaml(self, yaml_path: str) -> dict:
         """
         Reads a YAML file and returns its content as a dictionary.
         Args:
@@ -131,7 +131,7 @@ class flashHelperClass(utHelperClass):
             return yaml.safe_load(f)
 
 
-    def flashWriteYaml(self, yaml_path: str, data: dict):
+    def writeYaml(self, yaml_path: str, data: dict):
         """
         Writes a dictionary to a YAML file.
         Args:
@@ -171,14 +171,14 @@ class flashHelperClass(utHelperClass):
                         out[key] = val
             return out
 
-    def updateFlashTestConfig(self, filename: str, expectedResult: str, stepPercent: int = 0):
+    def updateFirmwareTestConfig(self, filename: str, expectedResult: str, stepPercent: int = 0):
         """
-        Updates the Flash L3 YAML for single-image mode.
+        Updates the FirmwareUpdate L3 YAML for single-image mode.
         """
-        data = self.flashReadYaml(self.l3TestConfigFile)
+        data = self.readYaml(self.l3TestConfigFile)
 
-        params = data["Flash"]["L3"]["Test"]["Parameters"]
-        expected = data["Flash"]["L3"]["Test"]["Expected_Results"]
+        params = data["FirmwareUpdate"]["L3"]["Test"]["Parameters"]
+        expected = data["FirmwareUpdate"]["L3"]["Test"]["Expected_Results"]
 
         params["filename"] = filename
         params["listener"] = True
@@ -188,15 +188,15 @@ class flashHelperClass(utHelperClass):
         expected["result"] = True
         expected["errorCode"] = expectedResult
 
-        self.flashWriteYaml(self.l3TestConfigFile, data)
+        self.writeYaml(self.l3TestConfigFile, data)
 
     def updateTestconfigurationFile(self, set_state:str, states_list:list, stress:bool):
         """
-         Updates the Flash L3 test YAML configuration file.
+         Updates the FirmwareUpdate L3 test YAML configuration file.
         """
         
-        data = self.flashReadYaml(self.l3TestConfigFile)
-        config_statelist = data["Flash"]["L3"]["SetStates"]["Parameters"]["state"]
+        data = self.readYaml(self.l3TestConfigFile)
+        config_statelist = data["FirmwareUpdate"]["L3"]["SetStates"]["Parameters"]["state"]
         repeat_count = 1
 
         if stress:
@@ -206,10 +206,10 @@ class flashHelperClass(utHelperClass):
         else:
             config_statelist.clear()
             config_statelist.append(str(set_state))
-            data["Flash"]["L3"]["SetStates"]["Parameters"]["repeat"] = repeat_count
+            data["FirmwareUpdate"]["L3"]["SetStates"]["Parameters"]["repeat"] = repeat_count
 
         # write to YAML
-        self.flashWriteYaml(self.l3TestConfigFile, data)
+        self.writeYaml(self.l3TestConfigFile, data)
 
     def updateNestedDictionaries(self, original: dict, updates: dict):
         """

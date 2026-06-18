@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #** *****************************************************************************
 # *
 # * If not stated otherwise in this file or this component's LICENSE file the
@@ -17,25 +18,17 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 # *
-#** ******************************************************************************
-Flash:
-  description: "Flash L1 and L2 test setup"
-  restart_required: False
-  test_suites: # List of L1 and L2 test suites
-    ######################################
-    # Entry to run all test case
-    ######################################
-    #  - name: "VTS_L1_FLASH"
-    #    test_cases:
-    #      - all
-    #######################################
-    # Entries to run individual test cases
-    #######################################
-    - name: "VTS_L1_FLASH"
-      test_cases: 
-          - "flashImageFromFile_invalid_params"
-    - name: "VTS_L3_FLASH"
-      test_cases: 
-          - "flash_imageTypes"
-          - "flash_concurrentReject"
-          - "flash_validateAllErrorcodes"
+#* ******************************************************************************
+
+import os
+import sys
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(dir_path, "../"))
+
+
+def Runall():
+    print("TODO: Implement FirmwareUpdate Runall test suite to run L1 and L3 tests sequentially.")
+
+if __name__ == '__main__':
+    Runall()

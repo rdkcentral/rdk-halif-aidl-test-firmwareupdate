@@ -19,12 +19,12 @@
 # *
 # * ******************************************************************************
 
-Flash:
+FirmwareUpdate:
   image_types:
-    PCI: ""                                     # TODO: update with path to PCI flash image
-    DRI: ""                                     # TODO: update with path to DRI flash image
-    SPLASH: ""                                  # TODO: update with path to SPLASH flash image
-    BOOTLOADER: ""                              # TODO: update with path to BOOTLOADER flash image
+    PCI: ""                                     # TODO: update with path to PCI firmware image
+    DRI: ""                                     # TODO: update with path to DRI firmware image
+    SPLASH: ""                                  # TODO: update with path to SPLASH firmware image
+    BOOTLOADER: ""                              # TODO: update with path to BOOTLOADER firmware image
   negative_images:
     ERROR_IMAGE_INVALID_TYPE: ""                # TODO: update with path to invalid type/unsupported type image
     ERROR_IMAGE_INVALID_SIZE: ""                # TODO: update with path to invalid size image
