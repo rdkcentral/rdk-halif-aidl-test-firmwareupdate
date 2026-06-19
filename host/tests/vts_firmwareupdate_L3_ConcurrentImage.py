@@ -34,11 +34,11 @@ FIRMWAREUPDATE_L3_TEST_SUITE_NAME = "VTS_L3_FIRMWAREUPDATE"
 
 class VTS_FIRMWAREUPDATE_L3_ConcurrentImage(firmwareupdateHelperClass):
     """
-    Validate that concurrent Flash image requests are rejected.
+    Validate that concurrent FirmwareUpdate image requests are rejected.
 
     Selects the first supported image type from the HFP profile,
-    initiates a flash operation, and verifies that any simultaneous
-    flash request is correctly refused by the HAL.
+    initiates a firmware update operation, and verifies that any simultaneous
+    firmware update request is correctly refused by the HAL.
     """
     def __init__(self, log:logModule=None):
         """

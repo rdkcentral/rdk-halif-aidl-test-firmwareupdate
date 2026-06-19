@@ -20,8 +20,8 @@
 #* ******************************************************************************
 
 RUN_DIR=$(realpath "$(dirname "$0")")
-VCOMPONENT_SERVICE_NAME=VComponentFlashService
-VCOMPONENT_CONFIG_PATH=${RUN_DIR}/vcomponent_configurations/flash_vcomponent_configuration.yaml
+VCOMPONENT_SERVICE_NAME=Vendor-FirmwareUpdate
+VCOMPONENT_CONFIG_PATH=${RUN_DIR}/vcomponent_configurations/firmwareupdate_vcomponent_configuration.yaml
 
 # Function to check if a process is running
 check_process()
@@ -92,5 +92,5 @@ else
     start_vcomponent_service
 fi
 
-echo "Executing [vts_flash_hal_test]"
-"${RUN_DIR}/vts_flash_hal_test" "$@"
+echo "Executing [vts_firmwareupdate_hal_test]"
+"${RUN_DIR}/vts_firmwareupdate_hal_test" "$@"

@@ -34,10 +34,10 @@ FIRMWAREUPDATE_L3_TEST_SUITE_NAME = "VTS_L3_FIRMWAREUPDATE"
 
 class VTS_FIRMWAREUPDATE_L3_ValidateAllErrorCodes(firmwareupdateHelperClass):
     """
-    Validates that all Flash error codes are correctly reported by the HAL.
+    Validates that all FirmwareUpdate error codes are correctly reported by the HAL.
 
-    Iterates over every negative test image in the profile, triggers a flash
-    operation expected to fail with a specific error code, and verifies that
+    Iterates over every negative test image in the profile, triggers a firmware
+    update operation expected to fail with a specific error code, and verifies that
     the HAL returns the correct error for each case.
     """
     def __init__(self, log:logModule=None):

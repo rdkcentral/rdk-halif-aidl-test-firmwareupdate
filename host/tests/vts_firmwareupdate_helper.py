@@ -100,7 +100,8 @@ class firmwareupdateHelperClass(utHelperClass):
                 self.utilities.untar(self.hal_session, target_tarfile, self.targetWorkspace)
 
         self.utilities.change_directory(self.hal_session_1, self.targetWorkspace)
-        self.hal_session_1.write(f"./{self.cpe.get('flash_process_name')} &")
+        process_name = self.cpe.get("firmwareupdate_process_name")
+        self.hal_session_1.write(f"./{process_name} &")
         time.sleep(2)
 
     def runTest(self, testSuite, test_case:str=None):

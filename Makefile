@@ -22,13 +22,13 @@ TARGET ?= linux
 VARIANT := CPP
 
 ROOT_DIR := $(CURDIR)
-FLASH_TEST_DIR :=  $(ROOT_DIR)/src
+FIRMWAREUPDATE_TEST_DIR :=  $(ROOT_DIR)/src
 
 BIN_DIR := $(ROOT_DIR)/build/bin
 LIB_DIR := $(ROOT_DIR)/build/$(TARGET)/lib
 BUILD_DIR := $(ROOT_DIR)/build/$(TARGET)/obj
 
-TARGET_EXEC := vts_flash_hal_test
+TARGET_EXEC := vts_firmwareupdate_hal_test
 
 # Get overall project version from .repo/manifests
 MANIFEST_DIR := $(ROOT_DIR)/.repo/manifests
@@ -65,7 +65,7 @@ ifeq ($(ENABLE_UT_INFO_LOGGING),1)
 CXXFLAGS += -DENABLE_UT_INFO_LOGGING
 endif
 
-SRC_DIRS := $(FLASH_TEST_DIR)
+SRC_DIRS := $(FIRMWAREUPDATE_TEST_DIR)
 SRC_DIRS += $(ROOT_DIR)/test
 
 # Versioned include dir and binder out dir resolved by build.sh

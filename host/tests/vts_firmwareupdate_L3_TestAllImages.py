@@ -34,7 +34,7 @@ FIRMWAREUPDATE_L3_TEST_SUITE_NAME = "VTS_L3_FIRMWAREUPDATE"
 
 class VTS_FIRMWAREUPDATE_L3_TestAllImages(firmwareupdateHelperClass):
     """
-    Validate all supported Flash image types
+    Validate all supported FirmwareUpdate image types.
     """
     def __init__(self, log:logModule=None):
         """
@@ -47,7 +47,7 @@ class VTS_FIRMWAREUPDATE_L3_TestAllImages(firmwareupdateHelperClass):
 
     def testFunction(self):
         """
-        Runs L3 Flash Test for all supported image types.
+        Runs the L3 FirmwareUpdate test for all supported image types.
 
         Returns:
             bool: True if all tests pass, False otherwise.

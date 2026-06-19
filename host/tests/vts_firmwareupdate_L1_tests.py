@@ -37,7 +37,7 @@ FIRMWAREUPDATE_L1_TEST_SUITE_NAME = "VTS_L1_FIRMWAREUPDATE"
 
 class VTS_FIRMWAREUPDATE_L1_Tests(firmwareupdateHelperClass):
     """
-    Runs automated L1 FLASH tests on the target device.
+    Runs automated L1 FirmwareUpdate tests on the target device.
     Handles setup, service restarts, asset management.
     Collects and aggregates test results for pass/fail reporting.
     """
