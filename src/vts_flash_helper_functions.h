@@ -95,7 +95,6 @@ using android::binder::Status;
 extern const ut_control_keyStringMapping_t bool_mapTable_flash[];
 extern const ut_control_keyStringMapping_t statusFlashException_mapTable[];
 
-
 #endif //__VTS_FLASH_HELPER_H__
 
 /** @} */ // End of FLASH_HALTEST_HELPER_HEADER
