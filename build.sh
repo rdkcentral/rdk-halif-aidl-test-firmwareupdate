@@ -31,7 +31,6 @@ declare -r TOP=`dirname $(realpath $0)`
 declare -r HALIF_VERSION=current
 RDK_HALIF_AIDL_VERSION="${RDK_HALIF_AIDL_VERSION="main"}"
 RDK_HALIF_TEST_BASE_URL="https://github.com/rdkcentral/rdk-halif-binder-test-"
-VCOMPONENT_FLASH_VERSION="${VCOMPONENT_FLASH_VERSION="main"}"
 OUT_TAR_FILE=vts-flash.tar.gz
 
 declare -A HALIF_COMPONENTS=(
@@ -44,14 +43,13 @@ declare -A HALIF_TEST_COMPONENTS=(
 
 # Define the directory where the repository will be cloned
 declare -r UT_CORE_DIR="${TOP}/ut-core"
-declare -r VCOMPONENT_DIR="${TOP}/vcomponent"
 declare -r TOP_BUILD_DIR="${TOP}/build"
 declare -r COMMON_DIR="${TOP}/common"
 declare -r BUILD_INSTALL_PREFIX=${TOP_BUILD_DIR}/usr
 declare -r AIDL_LIB_DIR=${TOP}/aidl_lib
 declare -r RDK_HAL_DIR=${TOP}/rdk-halif-aidl
 declare -r RDK_HAL_TEST_DIR=${TOP}/vts_hal_test_components
-declare -r PROFILES_DIR=${TOP}/profile
+declare -r PROFILES_DIR=${TOP}/profiles
 declare -r AV_L4_TEST_DIR=${RDK_HAL_TEST_DIR}/av_l4_tests
 
 DEF_LINUX_BINDER="`realpath ${TOP}/../`/linux_binder_idl"
@@ -180,67 +178,6 @@ build_ut_core()
 }
 
 ###############################################################################
-# Function to Build vcomponent services
-###############################################################################
-build_vcomponent_services()
-{
-    if [ ! -d ${VCOMPONENT_DIR} ]; then
-        git clone git@github.com:rdkcentral/rdk-aidl-vcomponent-flash.git ${VCOMPONENT_DIR}
-        if [ $? -ne 0 ]; then
-            echo "Failed to clone the vcomp repository. Exiting."
-            exit 1
-        fi
-    fi
-
-    pushd ${VCOMPONENT_DIR}
-
-    git checkout ${VCOMPONENT_FLASH_VERSION}
-
-    make -j"$(nproc)" -C "${TOP}/vcomponent" BUILD_DIR="${TOP_BUILD_DIR}" UT_CORE_DIR="${UT_CORE_DIR}"
-    if [ $? -ne 0 ]; then
-        echo -e "${BOLD}╔════════════════════════════════════════════════╗${RESET}"
-        echo -e "${BOLD}* ${RED}Failed to build the vcomponent Service. Exiting.${RESET}"
-        echo -e "${BOLD}╚════════════════════════════════════════════════╝${RESET}"
-        exit 1
-    fi
-
-    popd
-}
-
-###############################################################################
-# Function to create the Flash bin for vcomponent
-###############################################################################
-get_vcomponent_flash_images()
-{
-    echo "Calling get_vcomponent_flash_images"
-    # Create the input directory for flash images
-    FLASH_DIR="$TOP_BUILD_DIR/bin/images"
-
-    mkdir -p "$FLASH_DIR"
-    echo "FLASH_DIR=$FLASH_DIR"
-    # List of all flash images (from your YAML)
-    FLASH_IMAGES=(
-        "flash_valid_PCI.bin"
-        "flash_valid_DRI.bin"
-        "flash_valid_SPLASH.bin"
-        "flash_valid_BOOTLOADER.bin"
-        "flash_valid_PCCI.bin"
-        "PCI_invalid_size.bin"
-        "PCI_invalid_signature.bin"
-        "PCI_invalid_product.bin"
-        "PCI_verify_fail.bin"
-        "PCI_verify_signature_fail.bin"
-    )
-
-    # Create each file using touch
-    for file in "${FLASH_IMAGES[@]}"; do
-        touch "$FLASH_DIR/$file"
-        echo "Created flash image: $FLASH_DIR/$file"
-    done
-}
-
-
-###############################################################################
 # Function to Build HALIF test
 ###############################################################################
 build_halif_test()
@@ -267,7 +204,6 @@ install_test()
     install -t ${INSTALL_PATH} run.sh
 
     cp -r ${PROFILES_DIR} ${INSTALL_PATH}
-    cp -r "${TOP}/vcomponent/vcomponent_configurations" ${INSTALL_PATH}
     cp -r "${TOP}/test_configuration" ${INSTALL_PATH}
 
     cd ${INSTALL_PATH}
@@ -283,10 +219,8 @@ clean_test()
     echo -e "${BOLD}removing *.o${RESET}"
 
     rm -rf test/*.o
-    rm -rf ${TOP}/vcomponent/src/*.o
     rm -rf ${TOP}/src/*.o
     make -C ${AIDL_LIB_DIR} clean
-    make -C ${VCOMPONENT_DIR} clean
     make clean
     rm -rf ${TOP_BUILD_DIR}/bin/${OUT_TAR_FILE}
 }
@@ -300,7 +234,6 @@ dist_clean_test()
     rm -rf $TOP_BUILD_DIR
     rm -rf $RDK_HAL_DIR
     rm -rf ${UT_CORE_DIR}
-    rm -rf ${VCOMPONENT_DIR}
 }
 
 ###############################################################################
@@ -340,8 +273,6 @@ elif [[ "$1" == [Tt]arget=* ]]; then
     build_aidl_libs
     build_ut_core
     build_halif_test
-    build_vcomponent_services
-    get_vcomponent_flash_images
     install_test
     echo -e "${BOLD}╔════════════════════════════════╗${RESET}"
     echo -e "${BOLD}* ${GREEN}Build Successful${RESET}               ${BOLD}*${RESET}"

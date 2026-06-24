@@ -41,14 +41,13 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
     Handles setup, service restarts, asset management.
     Collects and aggregates test results for pass/fail reporting.
     """
-    def __init__(self, log:logModule=None):
+    def __init__(self, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
         qcId = "1"
         self.testName = "Flash_L1"
-        #configureNetwork = False
-        super().__init__(self.testName, qcId, log)
+        super().__init__(self.testName, qcId, log, moduleName)
 
 
     def testFunction(self):
@@ -59,10 +58,11 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
             bool: Final result of the test.
         """
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
+        testCaseConfiguration = ConfigRead(self.paths["testCasesConfigFile"], self.moduleName)
 
         self.utMenu.start()
 
-        testsuites = self.testCaseConfiguration.fields.get('test_suites')
+        testsuites = testCaseConfiguration.fields.get('test_suites')
         finalresult = True
 
         for testsuite in testsuites:

@@ -36,14 +36,14 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
     """
     Validate all supported Flash image types
     """
-    def __init__(self, log:logModule=None):
+    def __init__(self, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
         self.testName = "flash_imageTypes"
         qcId = "1"
         
-        super().__init__(self.testName, qcId, log)
+        super().__init__(self.testName, qcId, log, moduleName)
 
     def testFunction(self):
         """
@@ -56,7 +56,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
         result = False
         overallResult = True
         
-        profileConfiguration = ConfigRead(self.moduleHFPFile, self.profile_moduleName)
+        profileConfiguration = ConfigRead(self.paths["moduleHFPFile"], self.profile_moduleName)
         validImageMap = self.getValidImageList()
 
         for imageType in profileConfiguration.supportedImages:
@@ -69,7 +69,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
             # Copy YAML to DUT
             self.utilities.sftpCopy(
                 self.hal_session,
-                self.l3TestConfigFile,
+                self.paths["l3TestConfigFile"],
                 self.l3TestConfigFolder
             )
             self.utMenu.start()

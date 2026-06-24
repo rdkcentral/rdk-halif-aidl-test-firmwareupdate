@@ -20,77 +20,7 @@
 #* ******************************************************************************
 
 RUN_DIR=$(realpath "$(dirname "$0")")
-VCOMPONENT_SERVICE_NAME=VComponentFlashService
-VCOMPONENT_CONFIG_PATH=${RUN_DIR}/vcomponent_configurations/flash_vcomponent_configuration.yaml
 
-# Function to check if a process is running
-check_process()
-{
-    local process_name=$1
-    pgrep -f "$process_name" > /dev/null
-    return $?
-}
-
-prompt_yes_no()
-{
-    local prompt=$1
-    while true; do
-        read -p "$prompt (y/n): " response
-        case $response in
-            [Yy]* ) return 0;;
-            [Nn]* ) return 1;;
-            * ) echo "Please answer y or n";;
-        esac
-    done
-}
-
-prompt_string()
-{
-    local prompt=$1
-    local response
-    read -p "$prompt : " response
-    echo "$response"
-}
-
-start_vcomponent_service()
-{
-    echo "Starting ${VCOMPONENT_SERVICE_NAME} with config: ${VCOMPONENT_CONFIG_PATH}"
-    local user_config
-    user_config=$(prompt_string "Mock Service Config Path (Default: ${VCOMPONENT_CONFIG_PATH})")
-    if [ -z "$user_config" ]; then
-        user_config="$VCOMPONENT_CONFIG_PATH"
-    fi
-    if [ ! -f "$user_config" ]; then
-        echo "ERROR: Config file not found: $user_config"
-        echo "Falling back to default config: $VCOMPONENT_CONFIG_PATH"
-
-        # If even the default does not exist ? exit safely
-        if [ ! -f "$VCOMPONENT_CONFIG_PATH" ]; then
-            echo "FATAL: Default config missing: $VCOMPONENT_CONFIG_PATH"
-            exit 1
-        fi
-        user_config="$VCOMPONENT_CONFIG_PATH"
-    fi
-    ${RUN_DIR}/$VCOMPONENT_SERVICE_NAME -c "$user_config" &
-    vcomponentservice_pid=$!
-    # Wait for service to be ready
-    sleep 1
-}
-
-if check_process $VCOMPONENT_SERVICE_NAME; then
-    echo "${VCOMPONENT_SERVICE_NAME} is already running"
-    mocservice_pid=$(pgrep -f $VCOMPONENT_SERVICE_NAME)
-    if prompt_yes_no "Do you want to re-start ${VCOMPONENT_SERVICE_NAME}?"; then
-        echo "Killing existing ${VCOMPONENT_SERVICE_NAME} (PID: $mocservice_pid)"
-        kill $mocservice_pid
-        sleep 2
-        start_vcomponent_service
-    else
-        echo "Continuing with existing ${VCOMPONENT_SERVICE_NAME} (PID: $mocservice_pid)"
-    fi
-else
-    start_vcomponent_service
-fi
 
 echo "Executing [vts_flash_hal_test]"
 "${RUN_DIR}/vts_flash_hal_test" "$@"
