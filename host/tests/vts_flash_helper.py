@@ -36,18 +36,22 @@ from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClas
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
 from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
 
+CONFIG_DIR = os.path.join(dir_path, "../configs")
+TEST_CONFIG_DIR = os.path.join(dir_path, "../../test_configuration")
+
 FLASH_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_flash_testMenuConfiguration.yaml")
-FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(os.path.join(dir_path, "../configs"), "vts_flash_testcase_configuration.yaml")
-FLASH_IMAGES_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_flash_image_config.yaml")
-FLASH_L3_TEST_CONFIG_FILE = os.path.join(os.path.join(dir_path, "../../test_configuration"), "vts_l3_flash.yaml")
+FLASH_TESTCASES_CONFIGURATION_FILE = os.path.join(CONFIG_DIR, "vts_flash_testcase_configuration.yaml")
+FLASH_IMAGES_CONFIG_FILE = os.path.join(TEST_CONFIG_DIR, "vts_flash_image_config.yaml")
+FLASH_L3_TEST_CONFIG_FILE = os.path.join(TEST_CONFIG_DIR, "vts_l3_flash.yaml")
 
 class flashHelperClass(utHelperClass):
 
-    def __init__(self, testName:str, qcId:str, log:logModule=None ):
+    def __init__(self, testName:str, qcId:str, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
-        self.moduleName = "Flash"
+        self.moduleName = "Flash" if moduleName is None else moduleName
+        isUnifiedTest = False if moduleName is None else True
         self.profile_moduleName = "flash"
         super().__init__(testName, qcId, log)
 
@@ -56,28 +60,72 @@ class flashHelperClass(utHelperClass):
             self.log = logModule(self.__class__.__name__)
             self.log.setLevel(self.log.INFO)
 
-        # Parse device configuration
+        # Parse device configuration first (used by path selection below)
         self.deviceTestSetup = self.cpe.get("test")
-        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName)
-        self.moduleHFPFile = os.path.join(dir_path, self.deviceTestSetup.get("profile"))
-        self.moduleHFPFile = self.moduleHFPFile.replace("\\", "/")
-
-        self.l3TestConfigFolder = os.path.join(self.targetWorkspace, "test_configuration")
-        self.l3TestConfigFolder = self.l3TestConfigFolder.replace("\\", "/")
-
         self.waitTime = self.cpe.get("wait_time")
         self.device_type = self.cpe.get("device_type")
         self.platform = self.cpe.get("platform")
+        self.targetWorkspace = os.path.join(self.cpe.get("target_directory"), self.moduleName).replace("\\", "/")
+
+        # Resolve local component and unified repo roots
+        component_root = os.path.normpath(os.path.join(dir_path, "../..")).replace("\\", "/")
+        unified_root = os.path.normpath(os.path.join(dir_path, "../../../..")).replace("\\", "/")
+
+        # Resolve all config paths based on run mode
+        if not isUnifiedTest:
+            self.log.info(f"Initialized flashHelperClass for module: {self.moduleName}")
+            self.paths = {
+                "testMenuConfigFile": FLASH_TEST_MENU_CONFIGURATION_FILE,
+                 "testCasesConfigFile": FLASH_TESTCASES_CONFIGURATION_FILE,
+                 "imagesConfigFile": FLASH_IMAGES_CONFIG_FILE,
+                 "l3TestConfigFile": FLASH_L3_TEST_CONFIG_FILE,
+                 "moduleHFPFile": os.path.join(dir_path, self.deviceTestSetup.get("profile"))
+            }
+            artifactBaseDir = dir_path
+            targetCfgBase = self.targetWorkspace
+        else:
+            self.paths = {
+                "testMenuConfigFile": os.path.join(
+                    unified_root, "host/tests/TestCases/vts_l3_test_setup.yaml"
+                ).replace("\\", "/"),
+                "testCasesConfigFile": os.path.join(
+                     component_root, "configs/vts_flash_testcase_configuration.yaml"
+                ).replace("\\", "/"),
+                "imagesConfigFile": os.path.join(
+                     component_root, "test_configuration/vts_flash_image_config.yaml"
+                ).replace("\\", "/"),
+                "l3TestConfigFile": os.path.join(
+                    component_root, "test_configuration/vts_l3_flash.yaml"
+                ).replace("\\", "/"),
+                "moduleHFPFile": os.path.join(
+                    component_root, "profiles/hfp-flash-vcomponent.yaml"
+                ).replace("\\", "/")
+            }
+            artifactBaseDir = os.path.join(component_root, "host").replace("\\", "/")
+            targetCfgBase = os.path.join(self.targetWorkspace, "bin").replace("\\", "/")
+
+        # Normalize all resolved paths to forward-slash form and keep both
+        # instance attributes and self.paths in sync.
+        for attr, path in self.paths.items():
+            normalized_path = os.path.normpath(path).replace("\\", "/")
+            setattr(self, attr, normalized_path)
+            self.paths[attr] = normalized_path
+
+        profileOnTarget = os.path.join(
+            targetCfgBase,
+            "profiles",
+            os.path.basename(self.paths["moduleHFPFile"])
+        ).replace("\\", "/")
+
+        self.l3TestConfigFolder = os.path.join(targetCfgBase, "test_configuration").replace("\\", "/")
 
         # Load test menu and test case configuration files
-        self.l3TestConfigFile = FLASH_L3_TEST_CONFIG_FILE
-        self.testMenuConfiguration = ConfigRead(FLASH_TEST_MENU_CONFIGURATION_FILE, self.moduleName)
-        self.testCaseConfiguration = ConfigRead(FLASH_TESTCASES_CONFIGURATION_FILE, self.moduleName)
-        self.testImageList = ConfigRead(FLASH_IMAGES_CONFIG_FILE, self.moduleName)
-        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute
+        self.testMenuConfiguration = ConfigRead(self.paths["testMenuConfigFile"], self.moduleName)
+        self.testImageList = ConfigRead(self.paths["imagesConfigFile"], "Flash")
+        self.testMenuConfiguration.test.execute = self.testMenuConfiguration.test.execute + f" -p {profileOnTarget}"
 
         # Establish HAL session
-        self.hal_session = self.dut.getConsoleSession("ssh_hal_test")
+        self.hal_session = self.dut.getConsoleSession("ssh_hal_test_0")
         self.hal_session_1 = self.dut.getConsoleSession("ssh_hal_test_1")
 
         # Initialize UT menu navigator and utilities
@@ -90,7 +138,7 @@ class flashHelperClass(utHelperClass):
         # Copy required artifacts to target device
         self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         for artifact in self.testMenuConfiguration.test.artifacts:
-            filesPath = os.path.join(dir_path, artifact)
+            filesPath = os.path.normpath(os.path.join(artifactBaseDir, artifact)).replace("\\", "/")
             self.utilities.sftpCopy(self.hal_session, filesPath, self.targetWorkspace)
 
             if tarfile.is_tarfile(filesPath):
@@ -99,8 +147,9 @@ class flashHelperClass(utHelperClass):
                 target_tarfile = target_tarfile.replace("\\", "/")
                 self.utilities.untar(self.hal_session, target_tarfile, self.targetWorkspace)
 
+        self.targetWorkspace = targetCfgBase
+        self.utilities.change_directory(self.hal_session, self.targetWorkspace)
         self.utilities.change_directory(self.hal_session_1, self.targetWorkspace)
-        self.hal_session_1.write(f"./{self.cpe.get('flash_process_name')} &")
         time.sleep(2)
 
     def runTest(self, testSuite, test_case:str=None):
@@ -175,7 +224,7 @@ class flashHelperClass(utHelperClass):
         """
         Updates the Flash L3 YAML for single-image mode.
         """
-        data = self.flashReadYaml(self.l3TestConfigFile)
+        data = self.flashReadYaml(self.paths["l3TestConfigFile"])
 
         params = data["Flash"]["L3"]["Test"]["Parameters"]
         expected = data["Flash"]["L3"]["Test"]["Expected_Results"]
@@ -188,14 +237,14 @@ class flashHelperClass(utHelperClass):
         expected["result"] = True
         expected["errorCode"] = expectedResult
 
-        self.flashWriteYaml(self.l3TestConfigFile, data)
+        self.flashWriteYaml(self.paths["l3TestConfigFile"], data)
 
     def updateTestconfigurationFile(self, set_state:str, states_list:list, stress:bool):
         """
          Updates the Flash L3 test YAML configuration file.
         """
         
-        data = self.flashReadYaml(self.l3TestConfigFile)
+        data = self.flashReadYaml(self.paths["l3TestConfigFile"])
         config_statelist = data["Flash"]["L3"]["SetStates"]["Parameters"]["state"]
         repeat_count = 1
 
@@ -209,7 +258,7 @@ class flashHelperClass(utHelperClass):
             data["Flash"]["L3"]["SetStates"]["Parameters"]["repeat"] = repeat_count
 
         # write to YAML
-        self.flashWriteYaml(self.l3TestConfigFile, data)
+        self.flashWriteYaml(self.paths["l3TestConfigFile"], data)
 
     def updateNestedDictionaries(self, original: dict, updates: dict):
         """
