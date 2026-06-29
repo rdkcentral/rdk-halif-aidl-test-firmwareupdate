@@ -31,11 +31,11 @@ FirmwareUpdate:
     #######################################
     # Entries to run individual test cases
     #######################################
-        - name: "VTS_L1_FIRMWAREUPDATE"
-      test_cases: 
+    - name: "VTS_L1_FIRMWAREUPDATE"
+      test_cases:
           - "updateFirmwareFromFile_invalid_params"
-        - name: "VTS_L3_FIRMWAREUPDATE"
-      test_cases: 
+    - name: "VTS_L3_FIRMWAREUPDATE"
+      test_cases:
           - "firmwareupdate_imageTypes"
           - "firmwareupdate_concurrentReject"
           - "firmwareupdate_validateAllErrorcodes"

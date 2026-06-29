@@ -22,6 +22,7 @@
 RUN_DIR=$(realpath "$(dirname "$0")")
 VCOMPONENT_SERVICE_NAME=Vendor-FirmwareUpdate
 VCOMPONENT_CONFIG_PATH=${RUN_DIR}/vcomponent_configurations/firmwareupdate_vcomponent_configuration.yaml
+export LD_LIBRARY_PATH="${RUN_DIR}:${LD_LIBRARY_PATH}"
 
 # Function to check if a process is running
 check_process()

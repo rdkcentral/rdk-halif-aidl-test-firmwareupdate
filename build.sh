@@ -115,6 +115,19 @@ install_linux_binder()
     if [ -d "${BINDER_INC}/include/binder_sdk" ]; then
         cp -apr ${BINDER_INC}/include/binder_sdk/. ${BUILD_INSTALL_PREFIX}/include/
     fi
+
+    # Bundle host libstdc++ so the binary runs on targets with older system libs
+    # (avoids GLIBCXX_x.x.xx not found errors at runtime)
+    local libstdcpp
+    libstdcpp=$(realpath "$(g++ -print-file-name=libstdc++.so.6)" 2>/dev/null)
+    if [ -f "${libstdcpp}" ]; then
+        install -t ${BUILD_INSTALL_PREFIX}/lib "${libstdcpp}"
+        # Create the soname symlink (libstdc++.so.6) that the dynamic linker looks for
+        local libstdcpp_basename
+        libstdcpp_basename=$(basename "${libstdcpp}")
+        ln -sf "${libstdcpp_basename}" "${BUILD_INSTALL_PREFIX}/lib/libstdc++.so.6"
+        echo "Bundled host libstdc++: ${libstdcpp}"
+    fi
 }
 
 ###############################################################################
@@ -295,6 +308,17 @@ install_test()
     install -t ${INSTALL_PATH} ${TOP_BUILD_DIR}/usr/bin/*
     install -t ${INSTALL_PATH} ${TOP_BUILD_DIR}/usr/lib/*
     install -t ${INSTALL_PATH} run.sh
+
+    # Remove bundled binder runtime libs — the target's system libbinder.so is
+    # compatible with its kernel binder driver. Bundling our compiled version
+    # causes a kernel/userspace protocol mismatch at runtime.
+    rm -f "${INSTALL_PATH}"/libbinder.so* \
+          "${INSTALL_PATH}"/libutils.so* \
+          "${INSTALL_PATH}"/libbase.so* \
+          "${INSTALL_PATH}"/libcutils.so* \
+          "${INSTALL_PATH}"/libcutils_sockets.so* \
+          "${INSTALL_PATH}"/liblog.so* \
+          "${INSTALL_PATH}"/servicemanager
 
     cp -r ${PROFILES_DIR} ${INSTALL_PATH}
     cp -r "${TOP}/vcomponent/vcomponent_configurations" ${INSTALL_PATH}
