@@ -90,6 +90,48 @@ verify_local_binder_sdk()
 }
 
 ###############################################################################
+# Install Binder service manager, headers and libraries into build/usr/ from
+# the rdk-halif-aidl Binder SDK (built by verify_local_binder_sdk).
+# Must be called after verify_local_binder_sdk().
+###############################################################################
+install_linux_binder()
+{
+    local BINDER_SDK="${LOCAL_BINDER_SDK_DIR}"
+    local BINDER_INC="${RDK_HAL_DIR}/out/build"
+
+    echo "Installing binder service manager, headers and libraries..."
+    install -d ${BUILD_INSTALL_PREFIX}/bin ${BUILD_INSTALL_PREFIX}/lib ${BUILD_INSTALL_PREFIX}/include
+
+    if [ -d "${BINDER_SDK}/bin" ]; then
+        find "${BINDER_SDK}/bin" -maxdepth 1 -type f -executable \
+            -exec install -t ${BUILD_INSTALL_PREFIX}/bin {} \; 2>/dev/null || true
+    fi
+
+    if [ -d "${BINDER_SDK}/lib/binder" ]; then
+        find "${BINDER_SDK}/lib/binder" -maxdepth 1 \( -name "*.so" -o -name "*.so.*" \) \
+            -exec install -t ${BUILD_INSTALL_PREFIX}/lib {} \; 2>/dev/null || true
+    fi
+
+    if [ -d "${BINDER_INC}/include/binder_sdk" ]; then
+        cp -apr ${BINDER_INC}/include/binder_sdk/. ${BUILD_INSTALL_PREFIX}/include/
+    fi
+}
+
+###############################################################################
+# Install versioned HALIF headers into build/usr/include/ so the Makefile can
+# reference them via the staged build/usr/include path.
+# Must be called after resolve_halif_versions().
+###############################################################################
+install_halif_headers()
+{
+    echo "Installing HALIF headers..."
+    install -d ${BUILD_INSTALL_PREFIX}/include
+    if [ -d "${HALIF_AIDL_INC_DIR}" ]; then
+        cp -apr "${HALIF_AIDL_INC_DIR}/." "${BUILD_INSTALL_PREFIX}/include/"
+    fi
+}
+
+###############################################################################
 # Function to resolve versioned src/include dirs from rdk-halif-aidl metadata
 ###############################################################################
 resolve_halif_versions()
@@ -232,11 +274,9 @@ build_vcomponent_services()
 ###############################################################################
 build_halif_test()
 {
-    # Build the tests
-    make -j`nproc` -C ${TOP} \
-        HALIF_AIDL_INC_DIR="${HALIF_AIDL_INC_DIR}" \
-        BINDER_SDK_INCLUDE_DIR="${LOCAL_BINDER_INCLUDE_DIR}" \
-        BINDER_SDK_LIB_DIR="${LOCAL_BINDER_LIB_DIR}"
+    # Build the tests — binder and HALIF headers are already staged in build/usr/
+    # by install_linux_binder() and install_halif_headers(), so no SDK paths needed.
+    make -j`nproc` -C ${TOP}
     if [ $? -ne 0 ]; then
         echo -e "${BOLD}╔════════════════════════════════════════════╗${RESET}"
         echo -e "${BOLD}* ${RED}Failed to build the main tests. Exiting.${RESET}"
@@ -329,6 +369,8 @@ elif [ "$1" == "help" ]; then
 elif [[ "$1" == [Tt]arget=* ]]; then
     resolve_halif_versions
     verify_local_binder_sdk
+    install_linux_binder
+    install_halif_headers
     build_aidl_libs
     build_ut_core
     build_halif_test
