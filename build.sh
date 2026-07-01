@@ -471,7 +471,7 @@ build_ut_core()
 build_vcomponent_services()
 {
     if [ ! -d ${VCOMPONENT_DIR} ]; then
-        git clone git@github.com:rdkcentral/rdk-aidl-vcomponent-flash.git ${VCOMPONENT_DIR}
+        git clone git@github.com:rdkcentral/rdk-aidl-vcomponent-firmwareupdate.git ${VCOMPONENT_DIR}
         if [ $? -ne 0 ]; then
             echo "Failed to clone the vcomp repository. Exiting."
             exit 1

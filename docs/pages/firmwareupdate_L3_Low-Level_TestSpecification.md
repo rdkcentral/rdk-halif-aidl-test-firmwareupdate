@@ -68,7 +68,7 @@ The L3 FirmwareUpdate test suite performs:
 
 ### Dependencies
 
-* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.21.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 * YAML Configuration: [test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
 * UT Framework
 
@@ -129,7 +129,7 @@ graph TD
 
 ### Dependencies
 
-* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.21.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 * Listener implementation
 
 ### User Interaction
@@ -182,7 +182,7 @@ graph TD
 [test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
 ### Dependencies
 
-* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.21.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 * Host-side script updates YAML
 * Error code mapping
 
@@ -223,7 +223,7 @@ graph TD
 
 ## References
 
-* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.21.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 * L3 Config: [test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
 * Image Config: [test_configuration/vts_firmwareupdate_image_config.yaml](../../test_configuration/vts_firmwareupdate_image_config.yaml)
 

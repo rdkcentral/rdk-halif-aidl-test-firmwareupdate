@@ -31,16 +31,6 @@
 
 ## Build the VTS
 
-### Build Linux Binder
-
-```bash
-git clone -b develop https://github.com/rdkcentral/linux_binder_idl.git
-cd linux_binder_idl
-./build-linux-binder-aidl.sh 64
-```
-
----
-
 ### Build FirmwareUpdate VTS
 
 ```bash
@@ -51,11 +41,8 @@ cd rdk-halif-aidl-test-flash
 ### Environment Variables
 
 ```bash
-export UT_CORE_VERSION=5.0.0
-export RDK_HALIF_AIDL_VERSION=0.15.0
-export VCOMPONENT_FIRMWAREUPDATE_VERSION=0.1.0
-export AIDL_BIN=/path/to/aidl
-export LINUX_BINDER_OUT_DIR=/path/to/local
+export UT_CORE_VERSION=5.1.0
+export RDK_HALIF_AIDL_VERSION=0.21.0
 ```
 
 Enable logs (optional):
@@ -64,8 +51,13 @@ Enable logs (optional):
 export ENABLE_UT_INFO_LOGGING=1
 ```
 #### Note
-This build has been compiled and reviewed against AIDL version 0.15.0.
+This build has been compiled and reviewed against AIDL version 0.21.0.
 
+### Clean
+
+```bash
+./build.sh dist_clean
+```
 ### Build
 
 ```bash
