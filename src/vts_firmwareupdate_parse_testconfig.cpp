@@ -32,21 +32,21 @@
  */
 
 /**
- * @addtogroup FLASH  Module
+ * @addtogroup FIRMWAREUPDATE  Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_PARSE_TESTCONFIG FLASH HAL Tests parse test configuration file
+ * @defgroup FIRMWAREUPDATE_HALTEST_PARSE_TESTCONFIG FirmwareUpdate HAL Tests parse test configuration file
  * @{
  * @parblock
  *
- * ### Parse test configuration functions for FLASH :
+ * ### Parse test configuration functions for FirmwareUpdate:
  *
  * Parse configuration functions required for the module across all vendors.
  *
@@ -58,11 +58,11 @@
  */
 
 /**
- * @file vts_flash_parse_testconfig.cpp
+ * @file vts_firmwareupdate_parse_testconfig.cpp
  *
  */
 
-#include "vts_flash_parse_testconfig.h"
+#include "vts_firmwareupdate_parse_testconfig.h"
 #include <binder/Status.h>
 #include <cstring>
 
@@ -80,7 +80,7 @@ static void* vcomponentkvp_create_instance(const char *fileName)
 
     if(!instance)
     {
-        UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to create ut_kvp instance");
+        UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Failed to create ut_kvp instance");
         return nullptr;
     }
 
@@ -88,7 +88,7 @@ static void* vcomponentkvp_create_instance(const char *fileName)
 
     if(result != UT_KVP_STATUS_SUCCESS)
     {
-        UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to open configuration file");
+        UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Failed to open configuration file");
         ut_kvp_destroyInstance(instance);
         return nullptr;
     }
@@ -113,49 +113,49 @@ static int32_t convertExceptionCode(const std::string &code)
     if(code == "EX_ILLEGAL_STATE") return Status::EX_ILLEGAL_STATE;
     if(code == "EX_SECURITY") return Status::EX_SECURITY;
 
-    UT_LOG_ERROR("[VCOMPONENT_FLASH] Unknown exceptionCode: %s", code.c_str());
+    UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Unknown exceptionCode: %s", code.c_str());
     return Status::EX_ILLEGAL_ARGUMENT;
 }
 
-static FlashImageResult convertErrorCode(const std::string& str)
+static FirmwareUpdateResult convertErrorCode(const std::string& str)
 {
     if (str == "SUCCESS")
-        return FlashImageResult::SUCCESS;
+        return FirmwareUpdateResult::SUCCESS;
     else if (str == "ERROR_IMAGE_INVALID_TYPE")
-        return FlashImageResult::ERROR_IMAGE_INVALID_TYPE;
+        return FirmwareUpdateResult::ERROR_IMAGE_INVALID_TYPE;
     else if (str == "ERROR_IMAGE_INVALID_SIZE")
-        return FlashImageResult::ERROR_IMAGE_INVALID_SIZE;
+        return FirmwareUpdateResult::ERROR_IMAGE_INVALID_SIZE;
     else if (str == "ERROR_IMAGE_INVALID_SIGNATURE")
-        return FlashImageResult::ERROR_IMAGE_INVALID_SIGNATURE;
+        return FirmwareUpdateResult::ERROR_IMAGE_INVALID_SIGNATURE;
     else if (str == "ERROR_IMAGE_INVALID_PRODUCT")
-        return FlashImageResult::ERROR_IMAGE_INVALID_PRODUCT;
+        return FirmwareUpdateResult::ERROR_IMAGE_INVALID_PRODUCT;
     else if (str == "ERROR_FILE_OPEN_FAIL")
-        return FlashImageResult::ERROR_FILE_OPEN_FAIL;
-    else if (str == "ERROR_FLASH_WRITE_FAILED")
-        return FlashImageResult::ERROR_FLASH_WRITE_FAILED;
-    else if (str == "ERROR_FLASH_VERIFY_FAILED")
-        return FlashImageResult::ERROR_FLASH_VERIFY_FAILED;
-    else if (str == "ERROR_FLASH_VERIFY_SIGNATURE_FAILED")
-        return FlashImageResult::ERROR_FLASH_VERIFY_SIGNATURE_FAILED;
+        return FirmwareUpdateResult::ERROR_FILE_OPEN_FAIL;
+    else if (str == "ERROR_FW_UPDATE_WRITE_FAILED")
+        return FirmwareUpdateResult::ERROR_FW_UPDATE_WRITE_FAILED;
+    else if (str == "ERROR_FW_UPDATE_VERIFY_FAILED")
+        return FirmwareUpdateResult::ERROR_FW_UPDATE_VERIFY_FAILED;
+    else if (str == "ERROR_FW_UPDATE_VERIFY_SIGNATURE_FAILED")
+        return FirmwareUpdateResult::ERROR_FW_UPDATE_VERIFY_SIGNATURE_FAILED;
     else
-        return FlashImageResult::ERROR_GENERAL;
+        return FirmwareUpdateResult::ERROR_GENERAL;
 }
 
 /* Parse single test configuration instance */
-static UT_status_t vts_flash_parse_testconfig_instance(
+static UT_status_t vts_firmwareupdate_parse_testconfig_instance(
         void *instance,
-        const std::string &flashKey,
-        flashValidationConfiguration_t &testConfiguration)
+        const std::string &firmwareUpdateKey,
+        firmwareUpdateValidationConfiguration_t &testConfiguration)
 {
     ut_kvp_instance_t* kvpInstance = (ut_kvp_instance_t*)instance;
-    const std::string parametersKey = flashKey + ".Parameters";
+    const std::string parametersKey = firmwareUpdateKey + ".Parameters";
 
     char buf[UT_KVP_MAX_ELEMENT_SIZE] = {0};
 
     /* filename */
     if(ut_kvp_getStringField(kvpInstance, (parametersKey + ".filename").c_str(), buf, sizeof(buf)) != UT_KVP_STATUS_SUCCESS)
     {
-        UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to read filename for key %s", (parametersKey + ".filename").c_str());
+        UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Failed to read filename for key %s", (parametersKey + ".filename").c_str());
         return UT_STATUS_FAILURE;
     }
     testConfiguration.filename = std::string(buf);
@@ -167,11 +167,11 @@ static UT_status_t vts_flash_parse_testconfig_instance(
     testConfiguration.stepPercent = ut_kvp_getUInt32Field(kvpInstance, (parametersKey + ".step_percent").c_str());
 
     /* Expected results */
-    const std::string expectedKey = flashKey + ".Expected_Results";
+    const std::string expectedKey = firmwareUpdateKey + ".Expected_Results";
 
     if(ut_kvp_getStringField(kvpInstance, (expectedKey + ".exceptionCode").c_str(), buf, sizeof(buf)) != UT_KVP_STATUS_SUCCESS)
     {
-        UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to read exceptionCode for key %s", (expectedKey + ".exceptionCode").c_str());
+        UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Failed to read exceptionCode for key %s", (expectedKey + ".exceptionCode").c_str());
         return UT_STATUS_FAILURE;
     }
     testConfiguration.expectedException = convertExceptionCode(std::string(buf));
@@ -188,7 +188,7 @@ static UT_status_t vts_flash_parse_testconfig_instance(
         testConfiguration.expectedErrorCode = convertErrorCode(std::string(buf));
         testConfiguration.hasErrorCode = true;
 
-        UT_LOG_DEBUG("[VCOMPONENT_FLASH] Parsed errorCode: %s[%d]", buf, testConfiguration.expectedErrorCode);
+        UT_LOG_DEBUG("[VTS_FIRMWAREUPDATE] Parsed errorCode: %s[%d]", buf, testConfiguration.expectedErrorCode);
     }
     else
     {
@@ -197,47 +197,47 @@ static UT_status_t vts_flash_parse_testconfig_instance(
     return UT_STATUS_OK;
 }
 
-/* Parse Flash test configuration file */
-UT_status_t vts_flash_parse_config(
+/* Parse FirmwareUpdate test configuration file */
+UT_status_t vts_firmwareupdate_parse_config(
         const char *configurationFile,
         const char *module,
         const char *testGroup,
         const char *testName,
-        flashTestConfiguration_t &outConfig)
+        firmwareUpdateTestConfiguration_t &outConfig)
 {
     void *testconfig = vcomponentkvp_create_instance(configurationFile);
     if(!testconfig)
     {
-        UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to create test configuration instance");
+        UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Failed to create test configuration instance");
         return UT_STATUS_FAILURE;
     }
 
     ut_kvp_instance_t* kvpInstance = (ut_kvp_instance_t*)testconfig;
-    outConfig.testMaxFlashwaitDurationMs = ut_kvp_getUInt32Field(
+    outConfig.testMaxFirmwareUpdateWaitDurationMs = ut_kvp_getUInt32Field(
         kvpInstance,
-        "Flash.overall.maxFlashWaitDurationMs");
-    if (outConfig.testMaxFlashwaitDurationMs == 0)
+        "FirmwareUpdate.overall.maxFirmwareUpdateWaitDurationMs");
+    if (outConfig.testMaxFirmwareUpdateWaitDurationMs == 0)
     {
-        UT_LOG_WARNING("[VCOMPONENT_FLASH] maxFlashWaitDurationMs not set in config, using default 30000 ms");
-        outConfig.testMaxFlashwaitDurationMs = 30000; // default to 30 seconds
+        UT_LOG_WARNING("[VTS_FIRMWAREUPDATE] maxFirmwareUpdateWaitDurationMs not set in config, using default 30000 ms");
+        outConfig.testMaxFirmwareUpdateWaitDurationMs = 30000; // default to 30 seconds
     }
     outConfig.testMaxProgressWaitDurationMs = ut_kvp_getUInt32Field(
         kvpInstance,
-        "Flash.overall.maxProgressWaitDurationMs");
+        "FirmwareUpdate.overall.maxProgressWaitDurationMs");
     if (outConfig.testMaxProgressWaitDurationMs == 0)
     {
-        UT_LOG_WARNING("[VCOMPONENT_FLASH] maxProgressWaitDurationMs not set in config, using default 300 ms");
+        UT_LOG_WARNING("[VTS_FIRMWAREUPDATE] maxProgressWaitDurationMs not set in config, using default 300 ms");
         outConfig.testMaxProgressWaitDurationMs = 300; // default to 300 ms
     }
 
     {
-        flashValidationConfiguration_t testConfiguration;
-        std::string baseKey = "Flash.L3.Test";
+        firmwareUpdateValidationConfiguration_t testConfiguration;
+        std::string baseKey = "FirmwareUpdate.L3.Test";
 
-        UT_status_t status = vts_flash_parse_testconfig_instance(kvpInstance, baseKey, testConfiguration);
+        UT_status_t status = vts_firmwareupdate_parse_testconfig_instance(kvpInstance, baseKey, testConfiguration);
         if(status != UT_STATUS_OK)
         {
-            UT_LOG_ERROR("[VCOMPONENT_FLASH] Failed to parse config: %s", baseKey.c_str());
+            UT_LOG_ERROR("[VTS_FIRMWAREUPDATE] Failed to parse config: %s", baseKey.c_str());
             vcomponentkvp_destroy_instance(testconfig);
             return status;
         }
@@ -247,7 +247,7 @@ UT_status_t vts_flash_parse_config(
     return UT_STATUS_OK;
 }
 
-/** @} */ // End of FLASH_HALTEST_PARSE_TESTCONFIG
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_PARSE_TESTCONFIG
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

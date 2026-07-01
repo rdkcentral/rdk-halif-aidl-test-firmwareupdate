@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #** *****************************************************************************
 # *
 # * If not stated otherwise in this file or this component's LICENSE file the
@@ -17,16 +18,17 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 # *
-#** ******************************************************************************
+#* ******************************************************************************
 
-# HAL Feature Profile for flash
+import os
+import sys
 
-flash:                           # Component object begins
-    progress:
-        step_percent: 5          # % increment per progress callback (e.g., 1, 5, 10)
-    supportedImages:
-        - "PCI"
-        - "DRI"
-        - "SPLASH"
-        - "BOOTLOADER"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(dir_path, "../"))
 
+
+def Runall():
+    print("TODO: Implement FirmwareUpdate Runall test suite to run L1 and L3 tests sequentially.")
+
+if __name__ == '__main__':
+    Runall()

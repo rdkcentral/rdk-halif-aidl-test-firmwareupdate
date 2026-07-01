@@ -32,21 +32,21 @@
  */
 
 /**
- * @addtogroup FLASH  Flash Module
+ * @addtogroup FIRMWAREUPDATE  FirmwareUpdate Module
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST FLASH HAL Tests
+ * @defgroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_MAIN FLASH HAL Tests Main File
+ * @defgroup FIRMWAREUPDATE_HALTEST_MAIN FirmwareUpdate HAL Tests Main File
  *  @{
  * @parblock
  *
- * ### Tests for FLASHHAL :
+ * ### Tests for FirmwareUpdate HAL :
  *
  * This is to ensure that the API meets the operational requirements of the module across all vendors.
  *
@@ -63,7 +63,7 @@
 
 #include <ut.h>
 #include <ut_log.h>
-#include "vts_flash_init.h"
+#include "vts_firmwareupdate_init.h"
 
 int main(int argc, char **argv)
 {
@@ -75,19 +75,19 @@ int main(int argc, char **argv)
     UT_LOG_INFO("\t BUILD_TIMESTAMP: \033[0;32m%s\033[0m", BUILD_TIMESTAMP);
     UT_LOG_INFO("\t UNIFIED VTS Version: \033[0;32m%s\033[0m", HALIF_TEST_PROJECT_VERSION);
     UT_LOG_INFO("\t AIDL HALIF Version: \033[0;32m%s\033[0m",RDK_HALIF_AIDL_VERSION);
-    UT_LOG_INFO("\t VTS UNIFIED FLASH HALIF Test Version: \033[0;32m%s\033[0m",FLASH_VERSION);
+    UT_LOG_INFO("\t VTS UNIFIED FIRMWAREUPDATE HALIF Test Version: \033[0;32m%s\033[0m", FIRMWAREUPDATE_VERSION);
     UT_LOG_INFO("==========================================================================");
 
-    result = VTS_FLASH_init();
+    result = VTS_FIRMWAREUPDATE_init();
 
     result = UT_run_tests();
 
-    VTS_FLASH_destroy();
+    VTS_FIRMWAREUPDATE_destroy();
 
     return result;
 }
 
-/** @} */ // End of FLASH_HALTEST_MAIN
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH Module
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_MAIN
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE Module
 /** @} */ // End of HPK

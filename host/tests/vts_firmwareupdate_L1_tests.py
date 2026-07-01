@@ -31,13 +31,13 @@ from raft.framework.core.logModule import logModule
 from raft.framework.plugins.ut_raft import utHelperClass
 from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClass
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
-from vts_flash_helper import flashHelperClass
+from vts_firmwareupdate_helper import firmwareupdateHelperClass
 
-FLASH_L1_TEST_SUITE_NAME = "VTS_L1_FLASH"
+FIRMWAREUPDATE_L1_TEST_SUITE_NAME = "VTS_L1_FIRMWAREUPDATE"
 
-class  VTS_FLASH_L1_Tests(flashHelperClass):
+class VTS_FIRMWAREUPDATE_L1_Tests(firmwareupdateHelperClass):
     """
-    Runs automated L1 FLASH tests on the target device.
+    Runs automated L1 FirmwareUpdate tests on the target device.
     Handles setup, service restarts, asset management.
     Collects and aggregates test results for pass/fail reporting.
     """
@@ -46,8 +46,8 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
         Initializes the test class
         """
         qcId = "1"
-        self.testName = "Flash_L1"
-        super().__init__(self.testName, qcId, log, moduleName)
+        self.testName = "FirmwareUpdate_L1"
+        super().__init__(self.testName, qcId, log)
 
 
     def testFunction(self):
@@ -67,7 +67,7 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
 
         for testsuite in testsuites:
             testsuite_name = testsuite.get("name")
-            if testsuite_name != FLASH_L1_TEST_SUITE_NAME:
+            if testsuite_name != FIRMWAREUPDATE_L1_TEST_SUITE_NAME:
                 continue
 
             test_cases = testsuite.get("test_cases")
@@ -89,5 +89,5 @@ class  VTS_FLASH_L1_Tests(flashHelperClass):
 if __name__ == '__main__':
     summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog = logModule(summaryLogName, level=logModule.INFO)
-    test = VTS_FLASH_L1_Tests(summaryLog)
+    test = VTS_FIRMWAREUPDATE_L1_Tests(summaryLog)
     test.run(False)
