@@ -116,7 +116,7 @@ L3 testing requires a test setup capable of simulating device reboots and monito
 
 ### Firmware Update Images
 
-Test images are local data files for the test suite and shall places under assets/firmwareupdate/input
+Test images are local data files for the test suite and shall be placed under /assets/firmwareupdatefiles/input
 The following test firmware images are used to exercise different update result and error conditions.
 
 
