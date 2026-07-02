@@ -332,16 +332,17 @@ install_linux_binder()
         cp -apr "${LOCAL_BINDER_INCLUDE_DIR}/." ${BUILD_INSTALL_PREFIX}/include/
     fi
 
-    # Bundle host libstdc++ so the binary runs on targets with older system libs
-    local libstdcpp
-    libstdcpp=$(realpath "$(g++ -print-file-name=libstdc++.so.6)" 2>/dev/null)
-    if [ -f "${libstdcpp}" ]; then
-        install -t ${BUILD_INSTALL_PREFIX}/lib "${libstdcpp}"
-        # Create the soname symlink (libstdc++.so.6) that the dynamic linker looks for
-        local libstdcpp_basename
-        libstdcpp_basename=$(basename "${libstdcpp}")
-        ln -sf "${libstdcpp_basename}" "${BUILD_INSTALL_PREFIX}/lib/libstdc++.so.6"
-        echo "Bundled host libstdc++: ${libstdcpp}"
+    # Bundle libstdc++ for linux builds so the binary runs on targets with older system libs
+    # (avoids GLIBCXX_x.x.xx not found errors at runtime). Do not bundle for cross builds.
+    if [ "${TARGET}" = "linux" ]; then
+        local cxx_bin=${CXX:-g++}
+        local libstdcpp
+        libstdcpp=$(realpath "$(${cxx_bin} -print-file-name=libstdc++.so.6)" 2>/dev/null)
+        if [ -f "${libstdcpp}" ]; then
+            install -t ${BUILD_INSTALL_PREFIX}/lib "${libstdcpp}"
+            ln -sf "$(basename "${libstdcpp}")" "${BUILD_INSTALL_PREFIX}/lib/libstdc++.so.6"
+            echo "Bundled libstdc++: ${libstdcpp}"
+        fi
     fi
 }
 

@@ -35,7 +35,7 @@ BINDER_SDK_INCLUDE_DIR ?= $(error BINDER_SDK_INCLUDE_DIR is not set - run via bu
 BINDER_SDK_LIB_DIR ?= $(error BINDER_SDK_LIB_DIR is not set - run via build.sh)
 
 # Source files from the versioned AIDL src directory
-AIDL_SRC := $(shell find $(HALIF_AIDL_SRC_DIR) -type f \( -name '*.cpp' -o -name '*.c' \))
+AIDL_SRC := $(shell find $(HALIF_AIDL_SRC_DIR) -type f -name '*.cpp')
 
 AIDL_LIB_INC_FLAGS := -I$(HALIF_AIDL_INC_DIR)
 AIDL_LIB_INC_FLAGS += -I$(BINDER_SDK_INCLUDE_DIR)
