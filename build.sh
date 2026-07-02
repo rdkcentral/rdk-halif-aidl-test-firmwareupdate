@@ -333,7 +333,6 @@ install_linux_binder()
     fi
 
     # Bundle host libstdc++ so the binary runs on targets with older system libs
-    # (avoids GLIBCXX_x.x.xx not found errors at runtime)
     local libstdcpp
     libstdcpp=$(realpath "$(g++ -print-file-name=libstdc++.so.6)" 2>/dev/null)
     if [ -f "${libstdcpp}" ]; then
@@ -361,50 +360,51 @@ install_halif_headers()
 }
 
 ###############################################################################
-# Function to resolve versioned src/include dirs from rdk-halif-aidl metadata
-###############################################################################
-resolve_hal_interfaces()
-{
-    for component in "${!HALIF_COMPONENTS[@]}"; do
-        local metadata="${RDK_HAL_DIR}/${component}/metadata.yaml"
-        if [ ! -f "$metadata" ]; then
-            echo -e "${BOLD}${RED}ERROR: metadata.yaml not found: ${metadata}${RESET}"
-            exit 1
-        fi
-
-        local version
-        version=$(grep -m1 '^version:' "$metadata" | awk '{print $2}')
-        if [ -z "$version" ]; then
-            echo -e "${BOLD}${RED}ERROR: Could not parse version from ${metadata}${RESET}"
-            exit 1
-        fi
-
-        local src_dir="${RDK_HAL_DIR}/${component}/${version}/src"
-        local inc_dir="${RDK_HAL_DIR}/${component}/${version}/include"
-
-        if [ ! -d "$src_dir" ]; then
-            echo -e "${BOLD}${RED}ERROR: versioned src dir not found: ${src_dir}${RESET}"
-            exit 1
-        fi
-        if [ ! -d "$inc_dir" ]; then
-            echo -e "${BOLD}${RED}ERROR: versioned include dir not found: ${inc_dir}${RESET}"
-            exit 1
-        fi
-
-        echo -e "${BOLD}${GREEN}${component}${RESET}: version=${YELLOW}${version}${RESET}"
-        HALIF_AIDL_SRC_DIR=$(realpath "$src_dir")
-        HALIF_AIDL_INC_DIR=$(realpath "$inc_dir")
-    done
-}
-
-###############################################################################
 # Resolve and install HALIF interfaces for non-manifest single-component builds
 ###############################################################################
 generate_hal_interfaces()
 {
-    checkout_halif_repo
-    resolve_hal_interfaces
-    install_halif_headers
+    # Iterate through the HALIF components
+    for component in "${!HALIF_COMPONENTS[@]}"; do
+        version=${HALIF_COMPONENTS[$component]}
+        echo "Component: $component, Version: $version"
+
+        HAL_TOP_BUILD_DIR=${TOP_BUILD_DIR}/${component}_aidl
+
+        cmake \
+        -DINTERFACE_TARGET=$component \
+        -DAIDL_SRC_VERSION=$version \
+        -B ${HAL_TOP_BUILD_DIR} \
+        $RDK_HAL_DIR
+        if [ $? -ne 0 ]; then
+            echo -e "${BOLD}╔══════════════════════════════════════════════╗${RESET}"
+            echo -e "${BOLD}* ${RED}Failed to Configure AIDL files. Exiting.${RESET}"
+            echo -e "${BOLD}╚══════════════════════════════════════════════╝${RESET}"
+            exit 1
+        fi
+
+        cmake --build ${HAL_TOP_BUILD_DIR} -j$(nproc)
+        if [ $? -ne 0 ]; then
+            echo -e "${BOLD}╔══════════════════════════════════════════════╗${RESET}"
+            echo -e "${BOLD}* ${RED}Failed to Generate AIDL headers. Exiting.${RESET}"
+            echo -e "${BOLD}╚══════════════════════════════════════════════╝${RESET}"
+            exit 1
+        fi
+
+        # Set src/include paths for build_aidl_libs and install_halif_headers
+        HALIF_AIDL_SRC_DIR=$(realpath "${RDK_HAL_DIR}/${component}/${version}/src")
+        HALIF_AIDL_INC_DIR=$(realpath "${RDK_HAL_DIR}/${component}/${version}/include")
+
+        # Copy generated headers to build/usr/include so the test build can find them
+        local gen_inc_dir="${RDK_HAL_DIR}/out/build/include/${component}/${version}/include"
+        if [ -d "${gen_inc_dir}" ]; then
+            install -d "${BUILD_INSTALL_PREFIX}/include"
+            cp -apr "${gen_inc_dir}/." "${BUILD_INSTALL_PREFIX}/include/"
+        else
+            echo -e "${BOLD}${RED}ERROR: Generated include dir not found: ${gen_inc_dir}${RESET}"
+            exit 1
+        fi
+    done
 }
 
 ###############################################################################
