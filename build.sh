@@ -600,6 +600,12 @@ build_ut_core()
 ###############################################################################
 build_halif_test()
 {
+    # ut-core compiles external SRC_DIRS sources in-place (not under BUILD_DIR),
+    # so stale .o files from a previous TARGET (e.g. linux vs arm) survive
+    # make clean and cause "file format not recognized" at link time.
+    # Remove them here so they are always recompiled for the current TARGET.
+    find "${TOP}/src" "${TOP}/test" -name "*.o" -delete 2>/dev/null || true
+
     make -j`nproc` -C ${TOP} TARGET=$TARGET
     if [ $? -ne 0 ]; then
         echo -e "${BOLD}╔════════════════════════════════════════════╗${RESET}"
