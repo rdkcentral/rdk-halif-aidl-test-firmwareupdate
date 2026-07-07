@@ -39,7 +39,7 @@ from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
 CONFIG_DIR = os.path.join(dir_path, "../configs")
 TEST_CONFIG_DIR = os.path.join(dir_path, "../../test_configuration")
 
-FIRMWAREUPDATE_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_flash_testMenuConfiguration.yaml")
+FIRMWAREUPDATE_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_firmwareupdate_testMenuConfiguration.yaml")
 FIRMWAREUPDATE_TESTCASES_CONFIGURATION_FILE = os.path.join(CONFIG_DIR, "vts_firmwareupdate_testcase_configuration.yaml")
 FIRMWAREUPDATE_IMAGES_CONFIG_FILE = os.path.join(TEST_CONFIG_DIR, "vts_firmwareupdate_image_config.yaml")
 FIRMWAREUPDATE_L3_TEST_CONFIG_FILE = os.path.join(TEST_CONFIG_DIR, "vts_l3_firmwareupdate.yaml")
