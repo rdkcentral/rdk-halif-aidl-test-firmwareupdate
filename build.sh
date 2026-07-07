@@ -54,14 +54,8 @@ BINDER_SDK_VERSION_FILE=${BINDER_SDK_VERSION_FILE:-${TOP}/binder_sdk.version}
 TARGET="linux"
 
 ###############################################################################
-# Cross-compile ARM binder runtime (libbinder.so, libutils.so, etc.) from
-# the linux_binder_idl sources using the ARM cross-compiler.
-#
-# build_modules.sh intentionally does not build binder for ARM — it expects
-# the linux-binder Yocto recipe to pre-stage it. For standalone ARM builds
-# outside Yocto, we cross-compile it here with BUILD_HOST_AIDL=OFF so only
-# the runtime libs are built (skipping the AIDL host tools that require a
-# host/x86 compiler).
+# Cross-compile ARM binder runtime from linux_binder_idl (BUILD_HOST_AIDL=OFF,
+# runtime libs only). Used when no pre-built BINDER_SDK_DIR is provided.
 ###############################################################################
 build_arm_binder()
 {
@@ -74,11 +68,7 @@ build_arm_binder()
         return 0
     fi
 
-    # Clone linux_binder_idl directly — not via build_binder.sh.
-    # build_binder.sh would try to build the full host AIDL compiler, but OE
-    # prepends its own native tools (including an older m4) to PATH even when
-    # CC/CXX are unset — that m4 rejects the --gnu flag bison passes and
-    # breaks the AIDL parser build.  A plain git clone avoids PATH entirely.
+    # Clone linux_binder_idl directly to avoid OE PATH issues with build_binder.sh.
     if [ ! -d "${BINDER_REPO_DIR}/.git" ]; then
         echo "Cloning linux_binder_idl for ARM build..."
         local _binder_version
@@ -105,20 +95,17 @@ build_arm_binder()
         }
     fi
 
-    # The OE toolchain sets CC/CXX to "compiler-path <flags>" (flags embedded).
-    # cmake requires CMAKE_C_COMPILER to be just the binary path; flags go into
-    # CMAKE_C_FLAGS_INIT inside a toolchain file.
-    #
-    # cmake 3.22+ auto-loads OEToolchainConfig.cmake even when CMAKE_TOOLCHAIN_FILE
-    # is cleared. Writing our own toolchain file takes precedence over that.
+    # Write a cmake toolchain file to split CC/CXX binary from flags and
+    # override OEToolchainConfig.cmake auto-loading (cmake 3.22+).
     if [ -z "${CC:-}" ] || [ -z "${CXX:-}" ]; then
         echo -e "${BOLD}${RED}ERROR: CC/CXX not set for ARM binder build. Source the cross-toolchain env or set BINDER_SDK_DIR to a prebuilt Binder SDK.${RESET}"
         exit 1
     fi
-    local cc_bin cxx_bin cc_flags
+    local cc_bin cxx_bin cc_flags cxx_flags
     cc_bin=$(echo "${CC}" | awk '{print $1}')
     cxx_bin=$(echo "${CXX}" | awk '{print $1}')
     cc_flags=$(echo "${CC}" | cut -d' ' -f2-)
+    cxx_flags=$(echo "${CXX}" | cut -d' ' -f2-)
 
     mkdir -p "${ARM_BINDER_BUILD}"
     local TOOLCHAIN_FILE="${ARM_BINDER_BUILD}/arm-cross.cmake"
@@ -128,7 +115,7 @@ set(CMAKE_SYSTEM_PROCESSOR arm)
 set(CMAKE_C_COMPILER   "${cc_bin}")
 set(CMAKE_CXX_COMPILER "${cxx_bin}")
 set(CMAKE_C_FLAGS_INIT   "${cc_flags} ${CFLAGS:-}")
-set(CMAKE_CXX_FLAGS_INIT "${cc_flags} ${CXXFLAGS:-}")
+set(CMAKE_CXX_FLAGS_INIT "${cxx_flags} ${CXXFLAGS:-}")
 set(CMAKE_EXE_LINKER_FLAGS_INIT    "${LDFLAGS:-}")
 set(CMAKE_SHARED_LINKER_FLAGS_INIT "${LDFLAGS:-}")
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
@@ -136,12 +123,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 TOOLCHAIN_EOF
 
-    # linux_binder_idl cmake auto-enables BUILD_ENV_YOCTO when OECORE_* env
-    # vars are set (line 174 of its CMakeLists.txt), which skips ALL install()
-    # rules so cmake never installs libs or headers.  Temporarily clear these
-    # vars during cmake configure so BUILD_ENV_YOCTO stays OFF.  The sysroot
-    # path is baked into our toolchain file's CMAKE_C_FLAGS_INIT, so clearing
-    # the OE detection vars does not affect cross-compilation.
+    # Clear OECORE_* vars temporarily so BUILD_ENV_YOCTO stays OFF during cmake configure.
     local _OECORE_NATIVE="${OECORE_NATIVE_SYSROOT:-}"
     local _OECORE_TARGET="${OECORE_TARGET_SYSROOT:-}"
     unset OECORE_NATIVE_SYSROOT OECORE_TARGET_SYSROOT
@@ -175,10 +157,7 @@ TOOLCHAIN_EOF
         exit 1
     }
 
-    # Reorganise the install tree to match what build_binder.sh produces for
-    # the linux target, so that build_modules.sh finds the SDK at the expected
-    # paths (out/target/lib/binder/, out/build/include/binder_sdk/).
-    # Always wipe lib/binder/ — Step 1 (x86 build) may have put x86_64 libs here.
+    # Reorganise install tree to match expected SDK layout (lib/binder/, include/binder_sdk/).
     local ARM_BINDER_INCLUDE="${RDK_HAL_DIR}/out/build"
     if [ -d "${ARM_BINDER_SDK}/lib" ]; then
         rm -rf "${ARM_BINDER_SDK}/lib/binder"
@@ -200,10 +179,8 @@ TOOLCHAIN_EOF
 }
 
 ###############################################################################
-# Create convenience softlinks so the Makefile can link with -l<module>-cpp
-# without embedding the version number:
-#   lib<module>-cpp.so  ->  lib<module>-v<version>-cpp.so
-# Versions are read from rdk-halif-aidl/versions_released.yaml.
+# Create unversioned softlinks (lib<module>-cpp.so -> lib<module>-v<ver>-cpp.so)
+# from versions_released.yaml and write halif_generated.mk.
 ###############################################################################
 create_halif_softlinks()
 {
@@ -398,7 +375,7 @@ build_halif_modules()
     fi
 
     local component
-    component="${!HALIF_COMPONENTS[@]}"
+    for component in "${!HALIF_COMPONENTS[@]}"; do break; done
 
     echo "Building ${component} HAL module from versions_released.yaml..."
     local default_version
@@ -410,8 +387,9 @@ build_halif_modules()
     component_version="${component_version:-$default_version}"
 
     local sdk_dir_arg=""
-    if [ "${TARGET}" = "arm" ] && [ -n "${BINDER_SDK_DIR:-}" ]; then
-        sdk_dir_arg="--sdk-dir ${BINDER_SDK_DIR}"
+    if [ "${TARGET}" = "arm" ]; then
+        export BINDER_ALLOW_CROSS_ENV=1
+        [ -n "${BINDER_SDK_DIR:-}" ] && sdk_dir_arg="--sdk-dir ${BINDER_SDK_DIR}"
     fi
     (
         cd "${RDK_HAL_DIR}"
@@ -512,51 +490,30 @@ resolve_halif_versions()
         default_version="current"
     fi
 
-    for component in "${!HALIF_COMPONENTS[@]}"; do
-        local version
-        version=$(grep -m1 "^[[:space:]]*${component}:" "$versions_file" | awk '{print $2}')
-        if [ -z "$version" ]; then
-            echo -e "${BOLD}${YELLOW}WARNING: ${component} not listed in versions_released.yaml, using default: ${default_version}${RESET}"
-            version="$default_version"
-        fi
+    local component
+    for component in "${!HALIF_COMPONENTS[@]}"; do break; done
+    local version
+    version=$(grep -m1 "^[[:space:]]*${component}:" "$versions_file" | awk '{print $2}')
+    if [ -z "$version" ]; then
+        echo -e "${BOLD}${YELLOW}WARNING: ${component} not listed in versions_released.yaml, using default: ${default_version}${RESET}"
+        version="$default_version"
+    fi
 
-        local inc_dir="${RDK_HAL_DIR}/${component}/${version}/include"
-        local src_dir="${RDK_HAL_DIR}/${component}/${version}/src"
+    local inc_dir="${RDK_HAL_DIR}/${component}/${version}/include"
+    local src_dir="${RDK_HAL_DIR}/${component}/${version}/src"
 
-        if [ ! -d "$inc_dir" ]; then
-            echo -e "${BOLD}${RED}ERROR: versioned include dir not found: ${inc_dir}${RESET}"
-            exit 1
-        fi
-        if [ ! -d "$src_dir" ]; then
-            echo -e "${BOLD}${RED}ERROR: versioned src dir not found: ${src_dir}${RESET}"
-            exit 1
-        fi
-
-        echo -e "${BOLD}${GREEN}${component}${RESET}: version=${YELLOW}${version}${RESET} ${CYAN}(versions_released.yaml)${RESET}"
-        HALIF_AIDL_SRC_DIR=$(realpath "$src_dir")
-        HALIF_AIDL_INC_DIR=$(realpath "$inc_dir")
-    done
-}
-
-###############################################################################
-# Build the local AIDL client libraries against the staged HAL and Binder SDK.
-###############################################################################
-build_aidl_libs()
-{
-    pushd ${AIDL_LIB_DIR}
-    make -j`nproc` \
-        HALIF_AIDL_SRC_DIR="${HALIF_AIDL_SRC_DIR}" \
-        HALIF_AIDL_INC_DIR="${HALIF_AIDL_INC_DIR}" \
-        BINDER_SDK_INCLUDE_DIR="${LOCAL_BINDER_INCLUDE_DIR}" \
-        BINDER_SDK_LIB_DIR="${LOCAL_BINDER_LIB_DIR}"
-    if [ $? -ne 0 ]; then
-        echo -e "${BOLD}╔══════════════════════════════════════════════╗${RESET}"
-        echo -e "${BOLD}* ${RED}Failed to build the AIDL Lib. Exiting.${RESET}"
-        echo -e "${BOLD}╚══════════════════════════════════════════════╝${RESET}"
+    if [ ! -d "$inc_dir" ]; then
+        echo -e "${BOLD}${RED}ERROR: versioned include dir not found: ${inc_dir}${RESET}"
         exit 1
     fi
-    echo "AIDL Build completed successfully."
-    popd
+    if [ ! -d "$src_dir" ]; then
+        echo -e "${BOLD}${RED}ERROR: versioned src dir not found: ${src_dir}${RESET}"
+        exit 1
+    fi
+
+    echo -e "${BOLD}${GREEN}${component}${RESET}: version=${YELLOW}${version}${RESET} ${CYAN}(versions_released.yaml)${RESET}"
+    HALIF_AIDL_SRC_DIR=$(realpath "$src_dir")
+    HALIF_AIDL_INC_DIR=$(realpath "$inc_dir")
 }
 
 ###############################################################################
@@ -600,10 +557,7 @@ build_ut_core()
 ###############################################################################
 build_halif_test()
 {
-    # ut-core compiles external SRC_DIRS sources in-place (not under BUILD_DIR),
-    # so stale .o files from a previous TARGET (e.g. linux vs arm) survive
-    # make clean and cause "file format not recognized" at link time.
-    # Remove them here so they are always recompiled for the current TARGET.
+    # Remove stale .o files so sources are always recompiled for the current TARGET.
     find "${TOP}/src" "${TOP}/test" -name "*.o" -delete 2>/dev/null || true
 
     make -j`nproc` -C ${TOP} TARGET=$TARGET
@@ -626,20 +580,34 @@ install_test()
     install -t ${INSTALL_PATH} ${TOP_BUILD_DIR}/usr/lib/*
     install -t ${INSTALL_PATH} run.sh
 
-    if [ "${TARGET}" = "arm" ]; then
-        rm -f "${INSTALL_PATH}"/libbinder.so* \
-              "${INSTALL_PATH}"/libutils.so* \
-              "${INSTALL_PATH}"/libbase.so* \
-              "${INSTALL_PATH}"/libcutils.so* \
-              "${INSTALL_PATH}"/libcutils_sockets.so* \
-              "${INSTALL_PATH}"/liblog.so* \
-              "${INSTALL_PATH}"/servicemanager
+    # Remove bundled binder-stack libs — the target system supplies its own.
+    rm -f "${INSTALL_PATH}"/libbinder.so* \
+          "${INSTALL_PATH}"/libutils.so* \
+          "${INSTALL_PATH}"/libbase.so* \
+          "${INSTALL_PATH}"/libcutils.so* \
+          "${INSTALL_PATH}"/libcutils_sockets.so* \
+          "${INSTALL_PATH}"/liblog.so* \
+          "${INSTALL_PATH}"/servicemanager
+
+    # Install versioned halif libs and their softlinks from the snapshot build
+    local HALIF_LIB_DIR="${RDK_HAL_DIR}/out/target/lib/halif"
+    if [ -d "${HALIF_LIB_DIR}" ]; then
+        # Dereference versioned libs (they may be symlinks to cmake build output)
+        find "${HALIF_LIB_DIR}" -maxdepth 1 -name "lib*-v*-cpp.so" \
+            -exec install -t "${INSTALL_PATH}" {} \; 2>/dev/null || true
+        # Preserve unversioned convenience symlinks
+        find "${HALIF_LIB_DIR}" -maxdepth 1 -type l -name "lib*-cpp.so" \
+            ! -name "lib*-v*-cpp.so" \
+            -exec cp -a {} "${INSTALL_PATH}/" \; 2>/dev/null || true
     fi
-    if [ "${TARGET}" = "linux" ]; then
-        # The vdevice system libbinder.so matches the kernel binder protocol.
-        # Remove the one we built to avoid a protocol version mismatch.
-        rm -f "${INSTALL_PATH}"/libbinder.so*
+
+    # Copy ut-control shared library required at runtime
+    local UT_CTRL_LIB_DIR="${UT_CORE_DIR}/framework/ut-control/build/${TARGET}/lib"
+    if [ -d "${UT_CTRL_LIB_DIR}" ]; then
+        find "${UT_CTRL_LIB_DIR}" -maxdepth 1 -name "libut_control.so*" \
+            -exec install -t "${INSTALL_PATH}" {} \; 2>/dev/null || true
     fi
+
     cp -r ${PROFILES_DIR} ${INSTALL_PATH}
     cp -r "${TOP}/test_configuration" ${INSTALL_PATH}
 
@@ -656,7 +624,6 @@ clean_test()
     echo -e "${BOLD}removing *.o${RESET}"
 
     make clean
-    make -C ${AIDL_LIB_DIR} clean
 
     rm -rf ${TOP_BUILD_DIR}/bin/${OUT_TAR_FILE}
 }
@@ -729,7 +696,6 @@ package_build_artifacts()
     echo -e "${BOLD}* ${GREEN}Build Started${RESET}                  ${BOLD}*${RESET}"
     echo -e "${BOLD}╚════════════════════════════════╝${RESET}"
     stage_hal_artifacts
-    build_aidl_libs
     build_ut_core
     build_halif_test
     install_test
