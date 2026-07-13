@@ -128,7 +128,7 @@ public:
  * - No successful firmware update operation occurs for invalid inputs@n
  */
 
- UT_ADD_TEST(VTS_L1_FIRMWAREUPDATE, updateFirmwareFromFile_invalid_params)
+ UT_ADD_TEST(VTS_L1_FIRMWAREUPDATE, updateFirmwareFromFile_neg)
 {
     UT_ASSERT_TRUE(gFirmwareUpdateHandle != nullptr);
 

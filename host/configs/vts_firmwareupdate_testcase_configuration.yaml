@@ -33,7 +33,7 @@ FirmwareUpdate:
     #######################################
     - name: "VTS_L1_FIRMWAREUPDATE"
       test_cases:
-          - "updateFirmwareFromFile_invalid_params"
+          - "updateFirmwareFromFile_neg"
     - name: "VTS_L3_FIRMWAREUPDATE"
       test_cases:
           - "firmwareupdate_imageTypes"
