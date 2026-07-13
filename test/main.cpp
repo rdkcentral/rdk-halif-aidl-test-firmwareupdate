@@ -79,9 +79,17 @@ int main(int argc, char **argv)
     UT_LOG_INFO("==========================================================================");
 
     result = VTS_FIRMWAREUPDATE_init();
-
+    if (result != UT_STATUS_OK)
+    {
+        UT_LOG_ERROR("VTS_FIRMWAREUPDATE_init() failed!");
+        return result;
+    }
     result = UT_run_tests();
 
+    if (result != UT_STATUS_OK)
+    {
+        UT_LOG_ERROR("UT_run_tests() failed!");
+    }
     VTS_FIRMWAREUPDATE_destroy();
 
     return result;
