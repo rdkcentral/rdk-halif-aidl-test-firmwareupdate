@@ -21,6 +21,5 @@
 
 RUN_DIR=$(realpath "$(dirname "$0")")
 
-
-echo "Executing [vts_flash_hal_test]"
-"${RUN_DIR}/vts_flash_hal_test" "$@"
+echo "Executing [vts_firmwareupdate_hal_test]"
+"${RUN_DIR}/vts_firmwareupdate_hal_test" "$@"

@@ -19,9 +19,9 @@
 # *
 # * ******************************************************************************
 
-Flash:
+FirmwareUpdate:
   overall:
-    maxFlashWaitDurationMs: 900000
+    maxFirmwareUpdateWaitDurationMs: 900000
     maxProgressWaitDurationMs: 120000
   L3:
     Test:

@@ -1,4 +1,4 @@
-# Flash HAL L1, L3 Test Procedure
+# FirmwareUpdate HAL L1, L3 Test Procedure
 
 ## Table of Contents
 
@@ -31,30 +31,19 @@
 
 ## Build the VTS
 
-### Build Linux Binder
+### Build FirmwareUpdate VTS
 
 ```bash
-git clone -b develop https://github.com/rdkcentral/linux_binder_idl.git
-cd linux_binder_idl
-./build-linux-binder-aidl.sh 64
-```
-
----
-
-### Build Flash VTS
-
-```bash
-git clone git@github.com:rdkcentral/rdk-halif-aidl-test-flash.git
-cd rdk-halif-aidl-test-flash
+git clone git@github.com:rdkcentral/rdk-halif-aidl-test-firmwareupdate.git
+cd rdk-halif-aidl-test-firmwareupdate
 ```
 
 ### Environment Variables
 
 ```bash
-export UT_CORE_VERSION=5.0.0
-export RDK_HALIF_AIDL_VERSION=0.15.0
-export AIDL_BIN=/path/to/aidl
-export LINUX_BINDER_OUT_DIR=/path/to/local
+export UT_LOG_LEVEL=4
+export UT_CORE_VERSION=5.1.0
+export RDK_HALIF_AIDL_VERSION=0.21.0
 ```
 
 Enable logs (optional):
@@ -63,18 +52,29 @@ Enable logs (optional):
 export ENABLE_UT_INFO_LOGGING=1
 ```
 #### Note
-This build has been compiled and reviewed against AIDL version 0.15.0.
+This build has been compiled and reviewed against AIDL version 0.21.0.
 
+### Clean
+
+```bash
+./build.sh dist_clean
+```
 ### Build
 
 ```bash
 ./build.sh Target=linux
 ```
 
+### Clean
+
+```bash
+./build.sh dist_clean
+```
+
 Output:
 
 * Binary: `build/bin/`
-* Tar: `vts-flash.tar.gz`
+* Tar: `vts-firmwareupdate.tar.gz`
 
 ---
 
@@ -83,16 +83,16 @@ Output:
 ### Copy to DUT
 
 ```bash
-scp vts-flash.tar.gz root@<DUT>:/tmp/
+scp vts-firmwareupdate.tar.gz root@<DUT>:/tmp/
 ```
 
 ### Extract
 
 ```bash
 ssh root@<DUT>
-mkdir /tmp/flash
-tar -zxf vts-flash.tar.gz -C /tmp/flash
-cd /tmp/flash
+mkdir /tmp/FirmwareUpdate
+tar -zxf vts-firmwareupdate.tar.gz -C /tmp/FirmwareUpdate
+cd /tmp/FirmwareUpdate
 ```
 
 ### Run Tests
@@ -126,7 +126,7 @@ deviceConfig:
     target_directory: "/tmp/"
     wait_time: 40
     test:
-      profile: "../../profiles/hfp-flash-vcomponent.yaml"
+      profile: "../../profiles/hfp-firmwareupdate-vcomponent.yaml"
 ```
 
 ---
@@ -146,7 +146,7 @@ source activate_venv.sh
 ### L1
 
 ```bash
-python vts_flash_L1_tests.py \
+python vts_firmwareupdate_L1_tests.py \
 --config <rack_config> \
 --deviceConfig <device_config>
 ```
@@ -156,38 +156,38 @@ python vts_flash_L1_tests.py \
 ### L3
 
 ```bash
-python <vts_flash_L3_xxx>.py \
+python <vts_firmwareupdate_L3_xxx>.py \
 --config <rack_config> \
 --deviceConfig <device_config>
 ```
 
 ---
 
-### Flash Image Configuration File
-[test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
+### FirmwareUpdate Image Configuration File
+[test_configuration/vts_firmwareupdate_image_config.yaml](../../test_configuration/vts_firmwareupdate_image_config.yaml)
 
 ```yaml
-Flash:
+FirmwareUpdate:
   image_types:
-    PCI: "<path_to_actual_PCI_flash_image>"
-    DRI: "<path_to_actual_DRI_flash_image>"
-    SPLASH: "<path_to_actual_SPLASH_flash_image>"
-    BOOTLOADER: "<path_to_actual_BOOTLOADER_flash_image>"
+    PCI: "<path_to_actual_PCI_firmware_image>"
+    DRI: "<path_to_actual_DRI_firmware_image>"
+    SPLASH: "<path_to_actual_SPLASH_firmware_image>"
+    BOOTLOADER: "<path_to_actual_BOOTLOADER_firmware_image>"
 
   negative_images:
     ERROR_IMAGE_INVALID_TYPE: "<path_to_invalid_type_image>"
     ERROR_IMAGE_INVALID_SIZE: "<path_to_invalid_size_image>"
     ERROR_IMAGE_INVALID_SIGNATURE: "<path_to_invalid_signature_image>"
     ERROR_IMAGE_INVALID_PRODUCT: "<path_to_invalid_product_image>"
-    ERROR_FLASH_VERIFY_FAILED: "<path_to_verify_fail_image>"
-    ERROR_FLASH_VERIFY_SIGNATURE_FAILED: "<path_to_verify_signature_fail_image>"
+    ERROR_FW_UPDATE_VERIFY_FAILED: "<path_to_verify_fail_image>"
+    ERROR_FW_UPDATE_VERIFY_SIGNATURE_FAILED: "<path_to_verify_signature_fail_image>"
 ```
 
 ---
 
 #### Notes
 
-- Replace `<path_to_…>` in the YAML with **real** flash image paths on the DUT.
+- Replace `<path_to_…>` in the YAML with **real** firmwareupdate image paths on the DUT.
 - Each negative test image must represent the **actual expected failure case**:
   - invalid type
   - invalid size
@@ -202,32 +202,32 @@ Flash:
 
 | Test Case | VComponent Path | Actual Component Path |
 |----------|------------------|------------------------|
-| **PCI** | `/tmp/Flash/images/flash_valid_PCI.bin` | `<path_to_actual_PCI_flash_image>` |
-| **DRI** | `/tmp/Flash/images/flash_valid_DRI.bin` | `<path_to_actual_DRI_flash_image>` |
-| **SPLASH** | `/tmp/Flash/images/flash_valid_SPLASH.bin` | `<path_to_actual_SPLASH_flash_image>` |
-| **BOOTLOADER** | `/tmp/Flash/images/flash_valid_BOOTLOADER.bin` | `<path_to_actual_BOOTLOADER_flash_image>` |
-| **ERROR_IMAGE_INVALID_TYPE** | `/tmp/Flash/images/flash_valid_PCCI.bin` | `<path_to_invalid_type_image>` |
-| **ERROR_IMAGE_INVALID_SIZE** | `/tmp/Flash/images/PCI_invalid_size.bin` | `<path_to_invalid_size_image>` |
-| **ERROR_IMAGE_INVALID_SIGNATURE** | `/tmp/Flash/images/PCI_invalid_signature.bin` | `<path_to_invalid_signature_image>` |
-| **ERROR_IMAGE_INVALID_PRODUCT** | `/tmp/Flash/images/PCI_invalid_product.bin` | `<path_to_invalid_product_image>` |
-| **ERROR_FLASH_VERIFY_FAILED** | `/tmp/Flash/images/PCI_verify_fail.bin` | `<path_to_verify_fail_image>` |
-| **ERROR_FLASH_VERIFY_SIGNATURE_FAILED** | `/tmp/Flash/images/PCI_verify_signature_fail.bin` | `<path_to_verify_signature_fail_image>` |
+| **PCI** | `/tmp/FirmwareUpdate/images/firmwareupdate_valid_PCI.bin` | `<path_to_actual_PCI_firmware_image>` |
+| **DRI** | `/tmp/FirmwareUpdate/images/firmwareupdate_valid_DRI.bin` | `<path_to_actual_DRI_firmware_image>` |
+| **SPLASH** | `/tmp/FirmwareUpdate/images/firmwareupdate_valid_SPLASH.bin` | `<path_to_actual_SPLASH_firmware_image>` |
+| **BOOTLOADER** | `/tmp/FirmwareUpdate/images/firmwareupdate_valid_BOOTLOADER.bin` | `<path_to_actual_BOOTLOADER_firmware_image>` |
+| **ERROR_IMAGE_INVALID_TYPE** | `/tmp/FirmwareUpdate/images/firmwareupdate_valid_PCCI.bin` | `<path_to_invalid_type_image>` |
+| **ERROR_IMAGE_INVALID_SIZE** | `/tmp/FirmwareUpdate/images/PCI_invalid_size.bin` | `<path_to_invalid_size_image>` |
+| **ERROR_IMAGE_INVALID_SIGNATURE** | `/tmp/FirmwareUpdate/images/PCI_invalid_signature.bin` | `<path_to_invalid_signature_image>` |
+| **ERROR_IMAGE_INVALID_PRODUCT** | `/tmp/FirmwareUpdate/images/PCI_invalid_product.bin` | `<path_to_invalid_product_image>` |
+| **ERROR_FW_UPDATE_VERIFY_FAILED** | `/tmp/FirmwareUpdate/images/PCI_verify_fail.bin` | `<path_to_verify_fail_image>` |
+| **ERROR_FW_UPDATE_VERIFY_SIGNATURE_FAILED** | `/tmp/FirmwareUpdate/images/PCI_verify_signature_fail.bin` | `<path_to_verify_signature_fail_image>` |
 
 
-### Flash Test Configuration File
+### FirmwareUpdate Test Configuration File
 
-[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
+[test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
 
 Note:
 - This config File will be updated by running L3 python test cases
 
 ---
 
-## 1. Validate All Error Codes — `vts_flash_L3_validateAllErrorcodes.py`
+## 1. Validate All Error Codes — `vts_firmwareupdate_L3_validateAllErrorcodes.py`
 
 ### Purpose
 
-Validates Flash HAL behavior for **all negative image scenarios**.
+Validates FirmwareUpdate HAL behavior for **all negative image scenarios**.
 
 ---
 
@@ -237,7 +237,7 @@ Validates Flash HAL behavior for **all negative image scenarios**.
 graph TD
     A[Load Negative Image List] --> B[Update YAML]
     B --> C[Copy YAML to DUT]
-    C --> D[Run flash_validateAllErrorcodes]
+    C --> D[Run firmwareupdate_validateAllErrorcodes]
     D --> E[Collect Results]
     E --> F{Match Expected Error?}
     F -->|No| G[FAIL]
@@ -262,17 +262,17 @@ graph TD
 | Invalid type      | ERROR_IMAGE_INVALID_TYPE      |
 | Invalid size      | ERROR_IMAGE_INVALID_SIZE      |
 | Invalid signature | ERROR_IMAGE_INVALID_SIGNATURE |
-| Verify fail       | ERROR_FLASH_VERIFY_FAILED     |
+| Verify fail       | ERROR_FW_UPDATE_VERIFY_FAILED |
 
 ---
 
 ---
 
-## 2. Validate Flash Success — `flash_imageTypes`
+## 2. Validate Firmware Update Success — `firmwareupdate_imageTypes`
 
 ### Purpose
 
-Validates successful flashing of **valid images**.
+Validates successful firmware updating of **valid images**.
 
 ---
 
@@ -280,7 +280,7 @@ Validates successful flashing of **valid images**.
 
 ```mermaid
 graph TD
-    A[Parse YAML] --> B[Call flash API]
+    A[Parse YAML] --> B[Call firmware update API]
     B --> C[Wait Completion]
     C --> D{SUCCESS?}
     D -->|No| E[FAIL]
@@ -293,7 +293,7 @@ graph TD
 ### Test Steps
 
 * Load valid image
-* Call `flashImageFromFile`
+* Call `updateFirmwareFromFile`
 * Monitor progress
 * Validate:
 
@@ -304,11 +304,11 @@ graph TD
 
 ---
 
-## 3. Validate Concurrent Flash Rejection — `flash_concurrentReject`
+## 3. Validate Concurrent Firmware Update Rejection — `firmwareupdate_concurrentReject`
 
 ### Purpose
 
-Ensures Flash HAL rejects parallel flash requests.
+Ensures FirmwareUpdate HAL rejects parallel firmware update requests.
 
 ---
 
@@ -316,7 +316,7 @@ Ensures Flash HAL rejects parallel flash requests.
 
 ```mermaid
 graph TD
-    A[Start Flash 1] --> B[Start Flash 2]
+    A[Start Update 1] --> B[Start Update 2]
     B --> C{Rejected?}
     C -->|No| D[FAIL]
     C -->|Yes| E[Wait Completion]
@@ -327,7 +327,7 @@ graph TD
 
 ### Test Steps
 
-* Start first flash
+* Start first firmware update
 * Immediately trigger second
 * Validate:
 
@@ -357,7 +357,7 @@ graph TD
 Ensure all images exist at:
 
 ```
-/assets/flashfiles/input/
+/assets/firmwareupdatefiles/input/
 ```
 
 ---
@@ -367,9 +367,9 @@ Ensure all images exist at:
 Defined in YAML:
 
 ```yaml
-Flash:
+FirmwareUpdate:
   overall:
-    maxFlashWaitDurationMs: 900000
+    maxFirmwareUpdateWaitDurationMs: 900000
 ```
 
 ---
@@ -378,7 +378,7 @@ Flash:
 
 | Issue            | Cause                    |
 | ---------------- | ------------------------ |
-| Timeout          | Large image / slow flash |
+| Timeout          | Large image / slow firmware update |
 | Wrong error code | Incorrect test image     |
 | No progress      | Listener not registered  |
 
