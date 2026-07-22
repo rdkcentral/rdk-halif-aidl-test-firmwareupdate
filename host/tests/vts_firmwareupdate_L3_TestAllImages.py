@@ -28,26 +28,26 @@ sys.path.append(os.path.join(dir_path, "../"))
 
 from raft.framework.plugins.ut_raft.configRead import ConfigRead
 from raft.framework.core.logModule import logModule
-from vts_flash_helper import flashHelperClass
+from vts_firmwareupdate_helper import firmwareupdateHelperClass
 
-FLASH_L3_TEST_SUITE_NAME = "VTS_L3_FLASH"
+FIRMWAREUPDATE_L3_TEST_SUITE_NAME = "VTS_L3_FIRMWAREUPDATE"
 
-class VTS_FLASH_L3_TestAllImages(flashHelperClass):
+class VTS_FIRMWAREUPDATE_L3_TestAllImages(firmwareupdateHelperClass):
     """
-    Validate all supported Flash image types
+    Validate all supported FirmwareUpdate image types.
     """
     def __init__(self, log:logModule=None, moduleName:str=None):
         """
         Initializes the test class
         """
-        self.testName = "flash_imageTypes"
+        self.testName = "firmwareupdate_imageTypes"
         qcId = "1"
         
         super().__init__(self.testName, qcId, log, moduleName)
 
     def testFunction(self):
         """
-        Runs L3 Flash Test for all supported image types.
+        Runs the L3 FirmwareUpdate test for all supported image types.
 
         Returns:
             bool: True if all tests pass, False otherwise.
@@ -62,8 +62,8 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
         for imageType in profileConfiguration.supportedImages:
             imageFile = validImageMap.get(imageType)
             stepPercent = profileConfiguration.progress.step_percent
-            self.updateFlashTestConfig(imageFile, "SUCCESS", stepPercent)
-            self.log.stepStart(f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+            self.updateFirmwareTestConfig(imageFile, "SUCCESS", stepPercent)
+            self.log.stepStart(f'Test Suit: {FIRMWAREUPDATE_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
             self.log.step(f'Supported Image type: {imageType}, imageFile: {imageFile}')
 
             # Copy YAML to DUT
@@ -74,7 +74,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
             )
             self.utMenu.start()
             output = self.utMenu.select(
-                FLASH_L3_TEST_SUITE_NAME,
+                FIRMWAREUPDATE_L3_TEST_SUITE_NAME,
                 self.testName,
                 None,
                 self.waitTime,
@@ -82,7 +82,7 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
             )
 
             result = self.utMenu.collect_results(output, True)
-            self.log.stepResult(result, f'Test Suit: {FLASH_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
+            self.log.stepResult(result, f'Test Suit: {FIRMWAREUPDATE_L3_TEST_SUITE_NAME} Test Case: {self.testName}')
             if not result:
                 overallResult = False
 
@@ -92,5 +92,5 @@ class VTS_FLASH_L3_TestAllImages(flashHelperClass):
 if __name__ == '__main__':
     summaryLogName = os.path.splitext(os.path.basename(__file__))[0] + "_summary"
     summaryLog  = logModule(summaryLogName, level=logModule.INFO)
-    test = VTS_FLASH_L3_TestAllImages(summaryLog)
+    test = VTS_FIRMWAREUPDATE_L3_TestAllImages(summaryLog)
     test.run(False)

@@ -32,17 +32,17 @@
  */
 
 /**
- * @addtogroup FLASH FLASH Module
+ * @addtogroup FIRMWAREUPDATE Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_INIT FLASH HAL Tests helper functions
+ * @defgroup FIRMWAREUPDATE_HALTEST_INIT_HEADER FirmwareUpdate HAL Tests helper functions Header File
  * @{
  * @parblock
  *
@@ -58,65 +58,19 @@
  */
 
 /**
- * @file vts_flash_init.cpp
+ * @file vts_firmwareupdate_init.h
  *
  */
 
-#include <ut.h>
-#include <ut_log.h>
-#include <binder/IServiceManager.h>
-#include <binder/ProcessState.h>
-#include <binder/IPCThreadState.h>
-#include <binder/Status.h>
-#include <utils/String16.h>
+#ifndef __VTS_FIRMWAREUPDATE_INIT_H__
+#define __VTS_FIRMWAREUPDATE_INIT_H__
 
-#include "com/rdk/hal/flash/BpFlashListener.h"
-#include "com/rdk/hal/flash/IFlash.h"
-#include "com/rdk/hal/flash/FlashImageResult.h"
-#include "com/rdk/hal/flash/IFlashListener.h"
+UT_status_t VTS_FIRMWAREUPDATE_init();
+void VTS_FIRMWAREUPDATE_destroy();
 
-#include "vts_flash_init.h"
+#endif //__VTS_FIRMWAREUPDATE_INIT_H__
 
-using android::sp;
-using android::String16;
-using android::defaultServiceManager;
-using android::binder::Status;
-
-using namespace com::rdk::hal;
-using namespace com::rdk::hal::flash;
-
-sp<IFlash> gFLASHHandle = nullptr;
-
-static UT_status_t vts_flash_getService()
-{
-   gFLASHHandle = android::interface_cast<IFlash>(
-            defaultServiceManager()->getService(String16(IFlash::serviceName().c_str())));
-
-    if (gFLASHHandle == nullptr)
-    {
-        UT_LOG_ERROR("FLASH Service not available");
-        return UT_STATUS_FAILURE;
-    }
-    return UT_STATUS_OK;
-}
-
-UT_status_t VTS_FLASH_init()
-{
-    if(vts_flash_getService() != UT_STATUS_OK)
-    {
-        UT_LOG_ERROR("Failed to get FLASH Service");
-        return UT_STATUS_FAILURE;
-    }
-    return UT_STATUS_OK;
-}
-
-void VTS_FLASH_destroy()
-{
-    UT_LOG_INFO("Destroying VTS_FLASH...");
-    // De-initialization code goes here
-}
-
-/** @} */ // End of FLASH_HALTEST_INIT
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_INIT_HEADER
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

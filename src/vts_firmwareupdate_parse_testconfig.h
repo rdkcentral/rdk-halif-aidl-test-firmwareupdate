@@ -32,21 +32,21 @@
  */
 
 /**
- * @addtogroup FLASH  Module
+ * @addtogroup FIRMWAREUPDATE  Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_PARSE_TESTCONFIG FLASH HAL Tests parse test configuration file
+ * @defgroup FIRMWAREUPDATE_HALTEST_PARSE_TESTCONFIG FirmwareUpdate HAL Tests parse test configuration file
  * @{
  * @parblock
  *
- * ### Parse test configuration functions for FLASH :
+ * ### Parse test configuration functions for FirmwareUpdate:
  *
  * Parse configuration functions required for the module across all vendors.
  *
@@ -58,20 +58,21 @@
  */
 
 /**
- * @file vts_flash_parse_testconfig.h
+ * @file vts_firmwareupdate_parse_testconfig.h
  *
  */
 
-#ifndef __VTS_FLASH_PARSE_TESTCONFIG_H__
-#define __VTS_FLASH_PARSE_TESTCONFIG_H__
+#ifndef __VTS_FIRMWAREUPDATE_PARSE_TESTCONFIG_H__
+#define __VTS_FIRMWAREUPDATE_PARSE_TESTCONFIG_H__
 
 #include <ut.h>
 #include <ut_log.h>
 #include "ut_kvp_profile.h"
-#include "com/rdk/hal/flash/IFlash.h"
+#include "com/rdk/hal/firmwareupdate/IFirmwareUpdate.h"
+#include "com/rdk/hal/firmwareupdate/FirmwareUpdateResult.h"
 
 using namespace std;
-using namespace com::rdk::hal::flash;
+using namespace com::rdk::hal::firmwareupdate;
 
 typedef struct
 {
@@ -83,7 +84,7 @@ typedef struct
     int32_t         expectedException{0};
 
     // For EX_NONE:
-    // - expectedResult == true  → background flash started (progress/completed may fire)
+    // - expectedResult == true  → background firmware update started (progress/completed may fire)
     // - expectedResult == false →  (no callbacks must fire)
     bool            expectedResult{true};
 
@@ -91,24 +92,24 @@ typedef struct
     bool            callbacksExpected{true};
 
     // Optional final onCompleted() result when callbacksExpected is true
-    FlashImageResult expectedErrorCode{FlashImageResult::SUCCESS};
+    FirmwareUpdateResult expectedErrorCode{FirmwareUpdateResult::SUCCESS};
     bool             hasErrorCode{false};
 
-} flashValidationConfiguration_t;
+} firmwareUpdateValidationConfiguration_t;
 
 typedef struct
 {
-    std::vector<flashValidationConfiguration_t> testConfigurations;
-    int32_t testMaxFlashwaitDurationMs{30000};
+    std::vector<firmwareUpdateValidationConfiguration_t> testConfigurations;
+    int32_t testMaxFirmwareUpdateWaitDurationMs{30000};
     int32_t testMaxProgressWaitDurationMs{0};
-} flashTestConfiguration_t;
-#define VTS_FLASH_TEST_CONFIG_PATH "./test_configuration/vts_l3_flash.yaml"
+} firmwareUpdateTestConfiguration_t;
+#define VTS_FIRMWAREUPDATE_TEST_CONFIG_PATH "./test_configuration/vts_l3_firmwareupdate.yaml"
 
-UT_status_t vts_flash_parse_config(const char *configurationFile, const char *module, const char *testGroup,
-                                       const char *testName, flashTestConfiguration_t &outConfig);
-#endif //__VTS_FLASH_PARSE_TESTCONFIG_H__
+UT_status_t vts_firmwareupdate_parse_config(const char *configurationFile, const char *module, const char *testGroup,
+                                       const char *testName, firmwareUpdateTestConfiguration_t &outConfig);
+#endif //__VTS_FIRMWAREUPDATE_PARSE_TESTCONFIG_H__
 
-/** @} */ // End of FLASH_HALTEST_PARSE_TESTCONFIG_HEADER
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_PARSE_TESTCONFIG_HEADER
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

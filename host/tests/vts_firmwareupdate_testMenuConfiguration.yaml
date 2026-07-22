@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 #** *****************************************************************************
 # *
 # * If not stated otherwise in this file or this component's LICENSE file the
@@ -19,16 +18,23 @@
 # * limitations under the License.
 # *
 #* ******************************************************************************
-
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(dir_path, "../"))
-
-
-def Runall():
-    print("TODO: Implement Flash Runall test suite to run L1, L3 tests sequentially.")
-
-if __name__ == '__main__':
-    Runall()
+FirmwareUpdate:
+    description: "FirmwareUpdate testing profile / menu system for UT"
+    test:
+        artifacts:
+        #List of artifacts folders, test class copies the content of folder to the target device workspace
+          - "../../build/bin/vts-firmwareupdate.tar.gz"
+        # exectute command, this will appended with the target device workspace path
+        execute: "./run.sh"
+        type: UT-C # C (UT-C Cunit) / C++ (UT-G (g++ ut-core gtest backend))
+        suites:
+            0:
+                name: "VTS_L1_FIRMWAREUPDATE"
+                tests: 
+                    - "updateFirmwareFromFile_neg"
+            1:
+                name: "VTS_L3_FIRMWAREUPDATE"
+                tests:
+                    - "firmwareupdate_imageTypes"
+                    - "firmwareupdate_concurrentReject"
+                    - "firmwareupdate_validateAllErrorcodes"

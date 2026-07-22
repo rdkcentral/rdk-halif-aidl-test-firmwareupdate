@@ -32,17 +32,17 @@
  */
 
 /**
- * @addtogroup FLASH Module
+ * @addtogroup FIRMWAREUPDATE  Module
  * @{
  */
 
 /**
- * @addtogroup FLASH_HALTEST FLASH HAL Tests
+ * @addtogroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  */
 
 /**
- * @defgroup FLASH_HALTEST_HELPER_HEADER FLASH HAL Tests helper functions Header File
+ * @defgroup FIRMWAREUPDATE_HALTEST_HELPER FirmwareUpdate HAL Tests helper functions
  * @{
  * @parblock
  *
@@ -58,46 +58,38 @@
  */
 
 /**
- * @file vts_flash_helper_functions.h
+ * @file vts_firmwareupdate_helper_functions.cpp
  *
  */
 
-#ifndef __VTS_FLASH_HELPER_H__
-#define __VTS_FLASH_HELPER_H__
+#include "vts_firmwareupdate_helper_functions.h"
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include <chrono>
-#include <ut.h>
-#include <ut_log.h>
-#include <ut_kvp_profile.h>
-#include <ut_control_plane.h>
+const ut_control_keyStringMapping_t bool_mapTable_firmwareupdate[] =
+{
+    {"false", (int32_t) false},
+    {"true",  (int32_t) true},
+    {NULL, -1}
+};
 
-#include <binder/IServiceManager.h>
-#include <binder/ProcessState.h>
-#include <binder/IPCThreadState.h>
-#include <binder/Status.h>
-#include <utils/String16.h>
+/* Status::Exception */
+const ut_control_keyStringMapping_t statusFirmwareUpdateException_mapTable[] =
+{
+    {"EX_NONE",                  (int32_t) Status::EX_NONE},
+    {"EX_SECURITY",              (int32_t) Status::EX_SECURITY},
+    {"EX_BAD_PARCELABLE",        (int32_t) Status::EX_BAD_PARCELABLE},
+    {"EX_ILLEGAL_ARGUMENT",      (int32_t) Status::EX_ILLEGAL_ARGUMENT},
+    {"EX_NULL_POINTER",          (int32_t) Status::EX_NULL_POINTER},
+    {"EX_ILLEGAL_STATE",         (int32_t) Status::EX_ILLEGAL_STATE},
+    {"EX_NETWORK_MAIN_THREAD",   (int32_t) Status::EX_NETWORK_MAIN_THREAD},
+    {"EX_UNSUPPORTED_OPERATION", (int32_t) Status::EX_UNSUPPORTED_OPERATION},
+    {"EX_SERVICE_SPECIFIC",      (int32_t) Status::EX_SERVICE_SPECIFIC},
+    {"EX_PARCELABLE",            (int32_t) Status::EX_PARCELABLE},
+    {"EX_HAS_REPLY_HEADER",      (int32_t) Status::EX_HAS_REPLY_HEADER},
+    {"EX_TRANSACTION_FAILED",    (int32_t) Status::EX_TRANSACTION_FAILED},
+    {NULL, -1}
+};
 
-#include "com/rdk/hal/flash/BnFlashListener.h"
-#include "com/rdk/hal/flash/IFlash.h"
-#include "com/rdk/hal/flash/FlashImageResult.h"
-#include "com/rdk/hal/flash/IFlashListener.h"
-
-using android::sp;
-using android::String16;
-using android::defaultServiceManager;
-using android::binder::Status;
-
-extern const ut_control_keyStringMapping_t bool_mapTable_flash[];
-extern const ut_control_keyStringMapping_t statusFlashException_mapTable[];
-
-#endif //__VTS_FLASH_HELPER_H__
-
-/** @} */ // End of FLASH_HALTEST_HELPER_HEADER
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_HELPER
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE
 /** @} */ // End of HPK

@@ -18,24 +18,15 @@
 # * limitations under the License.
 # *
 #** ******************************************************************************
-Flash:
-  description: "Flash L1 and L2 test setup"
-  restart_required: False
-  test_suites: # List of L1 and L2 test suites
-    ######################################
-    # Entry to run all test case
-    ######################################
-    #  - name: "VTS_L1_FLASH"
-    #    test_cases:
-    #      - all
-    #######################################
-    # Entries to run individual test cases
-    #######################################
-    - name: "VTS_L1_FLASH"
-      test_cases: 
-          - "flashImageFromFile_invalid_params"
-    - name: "VTS_L3_FLASH"
-      test_cases: 
-          - "flash_imageTypes"
-          - "flash_concurrentReject"
-          - "flash_validateAllErrorcodes"
+
+# HAL Feature Profile for FirmwareUpdate
+
+FirmwareUpdate:                  # Component object begins
+    progress:
+        step_percent: 5          # % increment per progress callback (e.g., 1, 5, 10)
+    supportedImages:
+        - "PCI"
+        - "DRI"
+        - "SPLASH"
+        - "BOOTLOADER"
+

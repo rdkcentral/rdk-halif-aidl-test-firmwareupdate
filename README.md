@@ -1,4 +1,4 @@
-# Test Suite For Flash HAL
+# Test Suite For FirmwareUpdate HAL
 
 ## Table of Contents
 
@@ -18,14 +18,14 @@
 
 ## Description
 
-This repository contains the Test Suites(`L1` , `L2` and `L3`) for Flash `HAL`.
+This repository contains the Test Suites(`L1` , `L2` and `L3`) for FirmwareUpdate `HAL`.
 
 ## Reference Documents
 
 |SNo|Document Name|Document Description|Document Link|
 |---|-------------|--------------------|-------------|
-|1|`HAL` Specification Document|This document provides specific information on the APIs for which tests are written in this module|[HAL Interface](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/README.md)|
-|2|High Level Test Specification|High Level Test Specification Documentation for the `Flash` Hal|[Flash_High-Level_TestSpecification.md](docs/pages/flash_High-Level_TestSpecification.md)||
-|4|`L3` Low Level Test Specification|`L3` Low Level Test Specification for the `Flash` Hal|[Flash_L3_Low-Level_TestSpecification.md](docs/pages/flash_L3_Low-Level_TestSpecification.md)|
-|5|`L1` `L2` and `L3` Test procedure document|This document contains Build Instructions and `L1` `L2` and `L3` Test procedure for the `Flash` Hal|[vts_Flash_L1_L2_L3_TestProcedure.md](docs/pages/vts_flash_L1_L2_L3_TestProcedure.md)|
+|1|`HAL` Specification Document|This document provides specific information on the APIs for which tests are written in this module|[HAL Interface](https://github.com/rdkcentral/rdk-halif-aidl/blob/main/README.md)|
+|2|High Level Test Specification|High Level Test Specification Documentation for the `FirmwareUpdate` Hal|[firmwareupdate_High-Level_TestSpecification.md](docs/pages/firmwareupdate_High-Level_TestSpecification.md)||
+|4|`L3` Low Level Test Specification|`L3` Low Level Test Specification for the `FirmwareUpdate` Hal|[firmwareupdate_L3_Low-Level_TestSpecification.md](docs/pages/firmwareupdate_L3_Low-Level_TestSpecification.md)|
+|5|`L1` `L2` and `L3` Test procedure document|This document contains Build Instructions and `L1` `L2` and `L3` Test procedure for the `FirmwareUpdate` Hal|[vts_firmwareupdate_L1_L2_L3_TestProcedure.md](docs/pages/vts_firmwareupdate_L1_L2_L3_TestProcedure.md)|
 

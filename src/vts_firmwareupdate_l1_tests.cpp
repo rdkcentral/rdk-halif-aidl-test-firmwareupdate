@@ -24,23 +24,23 @@
  */
 
 /**
- * @addtogroup FLASH Module
+ * @addtogroup FIRMWAREUPDATE Module
  * @{
  *
  */
 
 /**
- * @defgroup FLASH_HALTEST FLASH HAL Tests
+ * @defgroup FIRMWAREUPDATE_HALTEST FirmwareUpdate HAL Tests
  * @{
  *
  */
 
 /**
- * @defgroup FLAH_HALTEST_L1 FLASH HAL Tests L1 File
+ * @defgroup FIRMWAREUPDATE_HALTEST_L1 FirmwareUpdate HAL Tests L1 File
  * @{
  * @parblock
  *
- * ### L1 Test Cases for FLASH HAL :
+ * ### L1 Test Cases for FirmwareUpdate HAL:
  *
  * This module includes Level 1 functional tests (success and failure scenarios).
  * This is to ensure that the API meets the operational requirements of the module across all vendors.
@@ -53,23 +53,23 @@
  */
 
 /**
- * @file vts_flash_l1_tests.c
+ * @file vts_firmwareupdate_l1_tests.cpp
  *
  */
-#include "vts_flash.h"
-#include "vts_flash_parse_testconfig.h"
+#include "vts_firmwareupdate.h"
+#include "vts_firmwareupdate_parse_testconfig.h"
 
-extern sp<IFlash> gFLASHHandle;
+extern sp<IFirmwareUpdate> gFirmwareUpdateHandle;
 
 /* Test class registration with UT_Core */
-UT_ADD_TEST_TO_GROUP(VTS_L1_FLASH, UT_TESTS_L1)
+UT_ADD_TEST_TO_GROUP(VTS_L1_FIRMWAREUPDATE, UT_TESTS_L1)
 
-class VTS_L1_FLASH : public UTCore
+class VTS_L1_FIRMWAREUPDATE : public UTCore
 {
 public:
-    VTS_L1_FLASH() : UTCore() {}
+    VTS_L1_FIRMWAREUPDATE() : UTCore() {}
 
-    ~VTS_L1_FLASH() override = default;
+    ~VTS_L1_FIRMWAREUPDATE() override = default;
 
     void SetUp() override
     {
@@ -95,9 +95,9 @@ public:
 };
 
 /**
- * @brief Test invalid parameter handling of flashImageFromFile API (L1 scope)
+ * @brief Test invalid parameter handling of updateFirmwareFromFile API (L1 scope)
  *
- * This test verifies that the flashImageFromFile API correctly handles
+ * This test verifies that the updateFirmwareFromFile API correctly handles
  * invalid input parameters and adheres to the AIDL contract for exception handling.
  *
  * L1 scope is limited to validating:
@@ -110,7 +110,7 @@ public:
  * **Priority:** High@n
  *
  * **Pre-Conditions:** None@n
- * **Dependencies:** IFlash service must be initialized@n
+ * **Dependencies:** IFirmwareUpdate service must be initialized@n
  * **User Interaction:** None@n
  *
  * **Test Procedure:**@n
@@ -125,16 +125,16 @@ public:
  * **Expected Outcome:**@n
  * - API rejects invalid parameters with correct exception codes@n
  * - Listener is invoked only when applicable@n
- * - No successful flash operation occurs for invalid inputs@n
+ * - No successful firmware update operation occurs for invalid inputs@n
  */
 
- UT_ADD_TEST(VTS_L1_FLASH, flashImageFromFile_invalid_params)
+ UT_ADD_TEST(VTS_L1_FIRMWAREUPDATE, updateFirmwareFromFile_neg)
 {
-    UT_ASSERT_TRUE(gFLASHHandle != nullptr);
+    UT_ASSERT_TRUE(gFirmwareUpdateHandle != nullptr);
 
     // 1. Null listener
-    FLASHIMAGEFROMFILE_NEGATIVE(
-        gFLASHHandle,
+    FIRMWAREUPDATEFROMFILE_NEGATIVE(
+        gFirmwareUpdateHandle,
         std::string("valid_image.bin"),
         nullptr,
         Status::EX_NULL_POINTER
@@ -142,10 +142,10 @@ public:
 
     // 2. Empty filename
     {
-        sp<FlashListener> listener = new FlashListener();
+        sp<VtsFirmwareUpdateListener> listener = new VtsFirmwareUpdateListener();
 
-        FLASHIMAGEFROMFILE_NEGATIVE(
-            gFLASHHandle,
+        FIRMWAREUPDATEFROMFILE_NEGATIVE(
+            gFirmwareUpdateHandle,
             std::string(""),
             listener,
             Status::EX_NONE
@@ -153,15 +153,15 @@ public:
 
         WAIT_FOR_COMPLETION(listener, 5000);
 
-        UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
+        UT_ASSERT_EQUAL(listener->mFinalResult, FirmwareUpdateResult::ERROR_FILE_OPEN_FAIL);
     }
 
     // 3. Non-existent file
     {
-        sp<FlashListener> listener = new FlashListener();
+        sp<VtsFirmwareUpdateListener> listener = new VtsFirmwareUpdateListener();
 
-        FLASHIMAGEFROMFILE_NEGATIVE(
-            gFLASHHandle,
+        FIRMWAREUPDATEFROMFILE_NEGATIVE(
+            gFirmwareUpdateHandle,
             std::string("non_existent.bin"),
             listener,
             Status::EX_NONE
@@ -169,12 +169,12 @@ public:
 
         WAIT_FOR_COMPLETION(listener, 5000);
 
-        UT_ASSERT_EQUAL(listener->mFinalResult, FlashImageResult::ERROR_FILE_OPEN_FAIL);
+        UT_ASSERT_EQUAL(listener->mFinalResult, FirmwareUpdateResult::ERROR_FILE_OPEN_FAIL);
     }
 }
 
 
-/** @} */ // End of FLASH_HALTEST L1 File
-/** @} */ // End of FLASH_HALTEST
-/** @} */ // End of FLASH Module
+/** @} */ // End of FIRMWAREUPDATE_HALTEST_L1
+/** @} */ // End of FIRMWAREUPDATE_HALTEST
+/** @} */ // End of FIRMWAREUPDATE Module
 /** @} */ // End of HPK

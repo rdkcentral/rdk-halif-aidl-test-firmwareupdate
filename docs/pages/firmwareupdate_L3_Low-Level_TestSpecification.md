@@ -1,4 +1,4 @@
-# Flash HAL L3 Low Level Test Specification and Procedure Documentation
+# FirmwareUpdate HAL L3 Low Level Test Specification and Procedure Documentation
 
 ## Table of Contents
 
@@ -10,11 +10,11 @@
 
 ## Scope
 
-This document describes the Level 3 (L3) Low Level Test Specification for the Flash HAL.
+This document describes the Level 3 (L3) Low Level Test Specification for the FirmwareUpdate HAL.
 
-L3 testing validates end-to-end Flash HAL functionality using real device operations, including:
+L3 testing validates end-to-end FirmwareUpdate HAL functionality using real device operations, including:
 
-* Flashing valid images
+* Updating valid Firmware images
 * Handling invalid/corrupted images
 * Verifying error codes
 * Concurrent request handling
@@ -24,13 +24,13 @@ L3 testing validates end-to-end Flash HAL functionality using real device operat
 
 ## Level 3 Test Procedure
 
-The L3 Flash test suite performs:
+The L3 FirmwareUpdate test suite performs:
 
 1. YAML configuration parsing (image + expected result)
 2. File transfer to DUT
-3. Execution of Flash HAL APIs via UT framework
+3. Execution of FirmwareUpdate HAL APIs via UT framework
 4. Monitoring progress via listener callbacks
-5. Validation of final flash result and error codes
+5. Validation of final FirmwareUpdate result and error codes
 
 ---
 
@@ -38,9 +38,9 @@ The L3 Flash test suite performs:
 
 | Test Case                   | Description                                           | HAL APIs                       |
 | --------------------------- | ----------------------------------------------------- | ------------------------------ |
-| flash_imageTypes            | Validate flashing of valid image types                | `IFlash::flashImageFromFile()` |
-| flash_concurrentReject      | Validate rejection of concurrent flash requests       | `IFlash::flashImageFromFile()` |
-| flash_validateAllErrorcodes | Validate all negative image scenarios and error codes | `IFlash::flashImageFromFile()` |
+| firmwareupdate_imageTypes            | Validate updating of valid image types                | `IFirmwareUpdate::updateFirmwareFromFile()` |
+| firmwareupdate_concurrentReject      | Validate rejection of concurrent FirmwareUpdate requests       | `IFirmwareUpdate::updateFirmwareFromFile()` |
+| firmwareupdate_validateAllErrorcodes | Validate all negative image scenarios and error codes | `IFirmwareUpdate::updateFirmwareFromFile()` |
 
 ---
 
@@ -48,28 +48,28 @@ The L3 Flash test suite performs:
 
 ---
 
-## Test 1: flash_imageTypes
+## Test 1: firmwareupdate_imageTypes
 
 | Title         | Details                                                                                              |
 | ------------- | ---------------------------------------------------------------------------------------------------- |
-| Function Name | `flash_imageTypes`                                                                                   |
-| Description   | Validates flashing of supported image types and ensures progress callbacks and successful completion |
+| Function Name | `firmwareupdate_imageTypes`                                                                          |
+| Description   | Validates updating of supported image types and ensures progress callbacks and successful completion |
 | Test Group    | 03                                                                                                   |
 | Test Case ID  | 001                                                                                                  |
 | Priority      | High                                                                                                 |
 
 ### Pre-Conditions
 
-* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
+* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_firmwareupdate_image_config.yaml](../../test_configuration/vts_firmwareupdate_image_config.yaml)
 * YAML updated dynamically by host test
-[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
-* Flash HAL service must be running
+[test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
+* FirmwareUpdate HAL service must be running
 * Listener interface must be registered
 
 ### Dependencies
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
-* YAML Configuration: [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/main/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+* YAML Configuration: [test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
 * UT Framework
 
 ### User Interaction
@@ -85,7 +85,7 @@ graph TD
     A[Parse YAML Config] --> B{Config Valid?}
     B -->|No| C[FAIL]
     B -->|Yes| D[Create Listener]
-    D --> E[Call flashImageFromFile]
+    D --> E[Call updateFirmwareFromFile]
     E --> F{API Success?}
     F -->|No| G[FAIL]
     F -->|Yes| H[Wait for Completion]
@@ -101,7 +101,7 @@ graph TD
 
 | Step | Description              | Test Data     | Expected Result            |
 | ---- | ------------------------ | ------------- | -------------------------- |
-| 1    | Parse YAML configuration | Flash.L3.Test | Config parsed successfully |
+| 1    | Parse YAML configuration | FirmwareUpdate.L3.Test | Config parsed successfully |
 | 2    | Get filename & listener  | Valid image   | Inputs valid               |
 | 3    | Call API                 | filename      | API returns success        |
 | 4    | Monitor progress         | Listener      | Progress from 0 to 100     |
@@ -110,26 +110,26 @@ graph TD
 
 ---
 
-## Test 2: flash_concurrentReject
+## Test 2: firmwareupdate_concurrentReject
 
 | Title         | Details                                               |
 | ------------- | ----------------------------------------------------- |
-| Function Name | `flash_concurrentReject`                              |
-| Description   | Validates that concurrent flash requests are rejected |
+| Function Name | `firmwareupdate_concurrentReject`                     |
+| Description   | Validates that concurrent FirmwareUpdate requests are rejected |
 | Test Group    | 03                                                    |
 | Test Case ID  | 002                                                   |
 | Priority      | High                                                  |
 
 ### Pre-Conditions
 
-* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
+* A valid image file must be present on the DUT, and its path must be updated in [test_configuration/vts_firmwareupdate_image_config.yaml](../../test_configuration/vts_firmwareupdate_image_config.yaml)
 * YAML updated dynamically by host test
-[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
-* Flash HAL service running
+[test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
+* FirmwareUpdate HAL service running
 
 ### Dependencies
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/main/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 * Listener implementation
 
 ### User Interaction
@@ -142,9 +142,9 @@ No
 
 ```mermaid
 graph TD
-    A[Start First Flash] --> B{Success?}
+    A[Start First FirmwareUpdate] --> B{Success?}
     B -->|No| C[FAIL]
-    B -->|Yes| D[Start Second Flash]
+    B -->|Yes| D[Start Second FirmwareUpdate]
     D --> E{Rejected?}
     E -->|No| F[FAIL]
     E -->|Yes| G[Wait First Completion]
@@ -159,30 +159,30 @@ graph TD
 
 | Step | Description        | Test Data | Expected Result        |
 | ---- | ------------------ | --------- | ---------------------- |
-| 1    | Start first flash  | filename  | Success                |
-| 2    | Start second flash | same file | Rejected (ret=false)   |
+| 1    | Start first FirmwareUpdate  | filename  | Success                |
+| 2    | Start second FirmwareUpdate | same file | Rejected (ret=false)   |
 | 3    | Wait completion    | listener1 | Completes successfully |
 | 4    | Validate result    | SUCCESS   | Test PASS              |
 
 ---
 
-## Test 3: flash_validateAllErrorcodes
+## Test 3: firmwareupdate_validateAllErrorcodes
 
 | Title         | Details                                                             |
 | ------------- | ------------------------------------------------------------------- |
-| Function Name | `flash_validateAllErrorcodes`                                       |
-| Description   | Validates Flash HAL behavior for all invalid images and error codes |
+| Function Name | `firmwareupdate_validateAllErrorcodes`                              |
+| Description   | Validates FirmwareUpdate HAL behavior for all invalid images and error codes |
 | Test Group    | 03                                                                  |
 | Test Case ID  | 003                                                                 |
 | Priority      | High                                                                |
 
 ### Pre-Conditions
-* All Error simulating images file must be present on the DUT, and its path must be updated in  [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
+* All error-simulating image files must be present on the DUT, and their paths must be updated in [test_configuration/vts_firmwareupdate_image_config.yaml](../../test_configuration/vts_firmwareupdate_image_config.yaml)
 * YAML updated dynamically by host test
-[test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
+[test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
 ### Dependencies
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/main/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 * Host-side script updates YAML
 * Error code mapping
 
@@ -197,7 +197,7 @@ No
 ```mermaid
 graph TD
     A[Load Negative Image] --> B[Update YAML]
-    B --> C[Call flashImageFromFile]
+    B --> C[Call updateFirmwareFromFile]
     C --> D{API Success?}
     D -->|No| E[FAIL]
     D -->|Yes| F[Wait Completion]
@@ -223,8 +223,8 @@ graph TD
 
 ## References
 
-* Flash HAL Interface: [IFlash](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.15.0/flash/current/com/rdk/hal/flash/IFlash.aidl)
-* L3 Config: [test_configuration/vts_l3_flash.yaml](../../test_configuration/vts_l3_flash.yaml)
-* Image Config: [test_configuration/vts_flash_image_config.yaml](../../test_configuration/vts_flash_image_config.yaml)
+* FirmwareUpdate HAL Interface: [IFirmwareUpdate](https://github.com/rdkcentral/rdk-halif-aidl/blob/main/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+* L3 Config: [test_configuration/vts_l3_firmwareupdate.yaml](../../test_configuration/vts_l3_firmwareupdate.yaml)
+* Image Config: [test_configuration/vts_firmwareupdate_image_config.yaml](../../test_configuration/vts_firmwareupdate_image_config.yaml)
 
 ---
