@@ -43,7 +43,7 @@ cd rdk-halif-aidl-test-firmwareupdate
 ```bash
 export UT_LOG_LEVEL=4
 export UT_CORE_VERSION=5.1.0
-export RDK_HALIF_AIDL_VERSION=0.21.0
+export RDK_HALIF_AIDL_VERSION=0.22.0
 ```
 
 Enable logs (optional):
@@ -52,7 +52,7 @@ Enable logs (optional):
 export ENABLE_UT_INFO_LOGGING=1
 ```
 #### Note
-This build has been compiled and reviewed against AIDL version 0.21.0.
+This build has been compiled and reviewed against AIDL version 0.22.0.
 
 ### Clean
 
@@ -61,20 +61,31 @@ This build has been compiled and reviewed against AIDL version 0.21.0.
 ```
 ### Build
 
+The build script will:
+- Clone `rdk-halif-aidl` at the configured version and bootstrap its Binder SDK via `build_binder.sh`
+- Build the `firmwareupdate` HAL module via `build_modules.sh` and stage headers
+- Install Binder service manager, headers, and libraries from the SDK
+- Clone and build the ut-core framework (including `libut_control.so`)
+- Build the FirmwareUpdate VTS test binary
+- Create installation tarball
+
 ```bash
 ./build.sh Target=linux
-```
-
-### Clean
-
-```bash
-./build.sh dist_clean
 ```
 
 Output:
 
 * Binary: `build/bin/`
 * Tar: `vts-firmwareupdate.tar.gz`
+
+### Build Options
+
+```bash
+./build.sh Target=<target>    # Build for specified target (linux, arm)
+./build.sh clean              # Clean build artifacts
+./build.sh dist_clean         # Clean all build and checkout folders
+./build.sh help               # Display help message
+```
 
 ---
 
