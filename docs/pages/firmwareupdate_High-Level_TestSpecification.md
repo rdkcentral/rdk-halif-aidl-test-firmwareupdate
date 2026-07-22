@@ -39,7 +39,7 @@ The FirmwareUpdate HAL provides a standardized interface for updating firmware i
 The design defines the functional scope, architecture, operational flow, constraints, and error-handling behavior of the FirmwareUpdate HAL. Detailed test procedures are covered separately in the L2 and L3 test specifications.
 
 ## Reference
-- FirmwareUpdate Interface Definitions - [FirmwareUpdate HAL](https://github.com/rdkcentral/rdk-halif-aidl/blob/0.21.0/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
+- FirmwareUpdate Interface Definitions - [FirmwareUpdate HAL](https://github.com/rdkcentral/rdk-halif-aidl/blob/main/firmwareupdate/current/com/rdk/hal/firmwareupdate/IFirmwareUpdate.aidl)
 
 
 ## Module Description
