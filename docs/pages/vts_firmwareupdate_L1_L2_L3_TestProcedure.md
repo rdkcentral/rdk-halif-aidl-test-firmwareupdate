@@ -137,7 +137,7 @@ deviceConfig:
     target_directory: "/tmp/"
     wait_time: 40
     test:
-      profile: "../../profiles/hfp-firmwareupdate-vcomponent.yaml"
+      profile: "../../profiles/hfp-firmwareupdate.yaml"
 ```
 
 ---
