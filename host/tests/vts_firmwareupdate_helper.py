@@ -98,7 +98,7 @@ class firmwareupdateHelperClass(utHelperClass):
                     component_root, "test_configuration/vts_l3_firmwareupdate.yaml"
                 ).replace("\\", "/"),
                 "moduleHFPFile": os.path.join(
-                    component_root, "profiles/hfp-firmwareupdate-vcomponent.yaml"
+                    component_root, "profiles/hfp-firmwareupdate.yaml"
                 ).replace("\\", "/")
             }
             artifactBaseDir = os.path.join(component_root, "host").replace("\\", "/")
