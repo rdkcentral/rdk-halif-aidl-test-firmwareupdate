@@ -72,6 +72,7 @@ class VTS_FIRMWAREUPDATE_L3_TestAllImages(firmwareupdateHelperClass):
                 self.paths["l3TestConfigFile"],
                 self.l3TestConfigFolder
             )
+            self.injectFirmwareUpdateResult("SUCCESS")
             self.utMenu.start()
             output = self.utMenu.select(
                 FIRMWAREUPDATE_L3_TEST_SUITE_NAME,

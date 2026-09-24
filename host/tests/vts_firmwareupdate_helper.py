@@ -35,9 +35,11 @@ from raft.framework.core.logModule import logModule
 from raft.framework.plugins.ut_raft.utSuiteNavigator import UTSuiteNavigatorClass
 from raft.framework.plugins.ut_raft.utBaseUtils import utBaseUtils
 from raft.framework.plugins.ut_raft.utUserResponse import utUserResponse
+from firmwareupdateController.virtualFirmwareUpdate import virtualFirmwareUpdate
 
 CONFIG_DIR = os.path.join(dir_path, "../configs")
 TEST_CONFIG_DIR = os.path.join(dir_path, "../../test_configuration")
+DEFAULT_CONTROLLER_PORT = 8087
 
 FIRMWAREUPDATE_TEST_MENU_CONFIGURATION_FILE = os.path.join(dir_path, "vts_firmwareupdate_testMenuConfiguration.yaml")
 FIRMWAREUPDATE_TESTCASES_CONFIGURATION_FILE = os.path.join(CONFIG_DIR, "vts_firmwareupdate_testcase_configuration.yaml")
@@ -127,6 +129,16 @@ class firmwareupdateHelperClass(utHelperClass):
         # Establish HAL session
         self.hal_session = self.dut.getConsoleSession("ssh_hal_test_0")
         self.hal_session_1 = self.dut.getConsoleSession("ssh_hal_test_1")
+        self.firmwareUpdateDevice = None
+        if self.platform == "vDevice":
+            controllerPort = self.deviceTestSetup.get(
+                "firmwareupdate_controller_port", DEFAULT_CONTROLLER_PORT
+            )
+            self.firmwareUpdateDevice = virtualFirmwareUpdate(
+                self.hal_session_1,
+                self.cpe.get("prompt"),
+                controllerPort,
+            )
 
         # Initialize UT menu navigator and utilities
         self.utMenu = UTSuiteNavigatorClass(self.testMenuConfiguration, None, self.hal_session)
@@ -189,6 +201,11 @@ class firmwareupdateHelperClass(utHelperClass):
         """
         with open(yaml_path, "w") as f:
             yaml.dump(data, f, sort_keys=False, default_flow_style=False)
+
+    def injectFirmwareUpdateResult(self, result: str):
+        """Inject the result the virtual FirmwareUpdate component must return."""
+        if self.firmwareUpdateDevice is not None:
+            self.firmwareUpdateDevice.injectFirmwareUpdateResult(result)
 
     def getValidImageList(self):
         """
