@@ -76,7 +76,7 @@ class VTS_FIRMWAREUPDATE_L3_ValidateAllErrorCodes(firmwareupdateHelperClass):
                 self.paths["l3TestConfigFile"],
                 self.l3TestConfigFolder
             )
-
+            self.injectFirmwareUpdateResult(f"{errorCode}")
             self.utMenu.start()
             output = self.utMenu.select(
                 FIRMWAREUPDATE_L3_TEST_SUITE_NAME,

@@ -11,6 +11,7 @@
   * [Install Python Packages](#install-python-packages)
   * [Run Test Cases](#run-test-cases)
 * [L3 Test Cases](#l3-test-cases)
+* [vDevice Simulation](#vdevice-simulation)
 * [Notes](#notes)
 
 ---
@@ -234,6 +235,27 @@ Note:
 
 ---
 
+## vDevice Simulation
+
+The L3 tests support a virtual FirmwareUpdate HAL service. In vDevice mode, the
+test host connects to the simulated DUT over SSH and injects the expected
+FirmwareUpdate result through the vDevice control plane before running the test.
+
+### Control-plane validation
+
+The test controller uses the `ssh_hal_test_1` session to post YAML commands to
+the FirmwareUpdate control plane. Validate the endpoint from the vDevice shell:
+
+```bash
+curl -s -X POST \
+  -H "Content-Type: application/x-yaml" \
+  --data-binary $'FirmwareUpdate:\n  command: inject_firmware_update_result\n  result: SUCCESS\n' \
+  http://localhost:8087/api/postKVP
+```
+
+The default port is `8087`. A different port can be supplied in the device test
+configuration as `firmwareupdate_controller_port`.
+
 ## 1. Validate All Error Codes — `vts_firmwareupdate_L3_validateAllErrorcodes.py`
 
 ### Purpose
@@ -408,6 +430,7 @@ passwd root
 Then, update the same password in the `vts_rack_configuration.yaml` file.
 
 Currently, the Python `paramiko` library does not support empty passwords on vDevice, so setting a password is necessary.
+
 
 ### Run on Windows Environment
 
